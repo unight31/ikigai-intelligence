@@ -1,0 +1,996 @@
+<!DOCTYPE html>
+<!-- saved from url=(0063)file:///Users/yannickruffe/Downloads/ikigai-intelligence_2.html -->
+<html lang="fr"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Ikigai Intelligence</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg:       #0B0C10;
+    --surface:  #111318;
+    --card:     #161820;
+    --border:   #1F2230;
+    --borderHi: #2E3248;
+    --ink:      #E8E6F0;
+    --inkMid:   #7B7F96;
+    --inkDim:   #3A3D50;
+    --blue:     #4A7CDB;
+    --blueDim:  #253660;
+    --gold:     #C8A84A;
+    --goldDim:  #5C4C22;
+    --red:      #C84A4A;
+    --green:    #4AC87A;
+  }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: -apple-system, 'SF Pro Display', 'Segoe UI', system-ui, sans-serif;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+  }
+  #app {
+    width: 100%;
+    max-width: 480px;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+  }
+  /* TOPBAR */
+  #topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 22px 14px;
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+    position: sticky;
+    top: 0;
+    background: var(--bg);
+    z-index: 10;
+  }
+  .logo-main { font-size: 17px; font-weight: 800; letter-spacing: .08em; color: var(--blue); }
+  .logo-sub  { font-size: 17px; font-weight: 200; letter-spacing: .15em; color: var(--inkDim); margin-left: 6px; }
+  .avatar {
+    width: 34px; height: 34px; border-radius: 50%;
+    background: var(--blueDim); border: 1px solid rgba(74,124,219,.27);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; color: var(--blue); font-weight: 800;
+  }
+  /* MAIN */
+  #main { flex: 1; overflow-y: auto; padding-bottom: 68px; }
+  /* BOTTOM NAV */
+  #bottomnav {
+    position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
+    width: 100%; max-width: 480px;
+    background: var(--surface); border-top: 1px solid var(--border);
+    display: flex; z-index: 10;
+  }
+  .nav-btn {
+    flex: 1; background: none; border: none; cursor: pointer;
+    padding: 12px 0 16px; display: flex; flex-direction: column;
+    align-items: center; gap: 4px;
+  }
+  .nav-btn .nav-icon { font-size: 18px; transition: color .2s; }
+  .nav-btn .nav-label { font-size: 10px; letter-spacing: .1em; text-transform: uppercase; font-weight: 400; transition: color .2s; }
+  .nav-btn.active .nav-icon,
+  .nav-btn.active .nav-label { color: var(--blue); font-weight: 700; }
+  .nav-btn:not(.active) .nav-icon,
+  .nav-btn:not(.active) .nav-label { color: var(--inkDim); }
+
+  /* CARDS & UTILS */
+  .card {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 12px; padding: 18px;
+  }
+  .pill {
+    display: inline-block; font-size: 10px; font-weight: 700;
+    letter-spacing: .12em; text-transform: uppercase;
+    padding: 3px 9px; border-radius: 4px;
+  }
+  .section-title {
+    font-size: 11px; letter-spacing: .18em; text-transform: uppercase;
+    font-weight: 600; color: var(--inkDim); margin-bottom: 14px;
+  }
+  .btn {
+    border: none; border-radius: 10px; cursor: pointer;
+    font-weight: 700; font-size: 13px; transition: opacity .2s;
+  }
+  .btn:disabled { opacity: .4; cursor: not-allowed; }
+  input[type=text], input[type=number], input[type=date] {
+    background: var(--card); border: 1px solid var(--borderHi);
+    border-radius: 10px; padding: 12px 14px; color: var(--ink);
+    font-size: 14px; outline: none; width: 100%; font-family: inherit;
+  }
+  .back-btn {
+    background: none; border: none; cursor: pointer;
+    color: var(--inkMid); font-size: 18px; padding: 0; line-height: 1;
+  }
+
+  /* SCREENS */
+  .screen { display: none; }
+  .screen.active { display: block; }
+
+  /* HOME */
+  .hero {
+    padding: 44px 28px 36px; text-align: center;
+    border-bottom: 1px solid var(--border);
+  }
+  .hero-eyebrow { font-size: 11px; letter-spacing: .3em; color: var(--inkDim); text-transform: uppercase; margin-bottom: 20px; font-weight: 600; }
+  .hero-title { font-size: 30px; font-weight: 800; letter-spacing: -.01em; color: var(--ink); line-height: 1.15; }
+  .hero-title span { color: var(--blue); }
+  .hero-sub { font-size: 14px; color: var(--inkMid); line-height: 1.6; margin-top: 16px; }
+  .domains-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 28px 20px 0; }
+  .domain-card {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 14px; padding: 20px 16px; cursor: pointer;
+    text-align: left; transition: all .2s; position: relative; overflow: hidden;
+  }
+  .domain-icon { font-size: 22px; margin-bottom: 10px; line-height: 1; }
+  .domain-name { font-size: 14px; font-weight: 700; color: var(--ink); margin-bottom: 2px; }
+  .domain-sub  { font-size: 11px; color: var(--inkMid); }
+  .domain-arrow { position: absolute; bottom: 12px; right: 14px; font-size: 11px; font-weight: 700; opacity: .5; }
+
+  /* DOMAIN SCREEN */
+  .domain-header { padding: 20px 22px 0; border-bottom: 1px solid var(--border); }
+  .domain-header-top { display: flex; align-items: center; gap: 12px; margin-bottom: 18px; }
+  .tabs { display: flex; overflow-x: auto; }
+  .tab-btn {
+    background: none; border: none; border-bottom: 2px solid transparent;
+    padding: 10px 14px; cursor: pointer; font-size: 12px; color: var(--inkMid);
+    white-space: nowrap; transition: all .2s; font-family: inherit;
+  }
+  .tab-btn.active { font-weight: 700; }
+  .tab-content { padding: 24px 22px 32px; }
+
+  /* CONCEPT CARD */
+  .concept-box {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 14px; padding: 22px 20px; min-height: 160px;
+    line-height: 1.75; font-size: 14px; color: var(--ink);
+    white-space: pre-wrap;
+  }
+  .refresh-btn {
+    margin-top: 14px; width: 100%; padding: 13px;
+    border-radius: 10px; border: 1px solid; font-size: 13px;
+    font-weight: 600; cursor: pointer; letter-spacing: .04em;
+    background: transparent; font-family: inherit;
+  }
+
+  /* BOOKS */
+  .book-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 18px; margin-bottom: 10px; }
+  .book-title  { font-size: 14px; font-weight: 700; color: var(--ink); margin-bottom: 3px; }
+  .book-author { font-size: 11px; color: var(--inkMid); }
+  .book-why    { font-size: 13px; color: var(--inkMid); line-height: 1.6; padding-top: 8px; border-top: 1px solid var(--border); margin-top: 8px; }
+
+  /* READING PLANNER */
+  .planner-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+  .plan-card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 18px; margin-bottom: 12px; cursor: pointer; transition: border-color .2s; }
+  .progress-bar-wrap { height: 5px; background: var(--border); border-radius: 3px; overflow: hidden; margin: 10px 0; }
+  .progress-bar { height: 100%; border-radius: 3px; transition: width .6s; }
+  .kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 20px; }
+  .kpi-box { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 12px 6px; text-align: center; }
+  .kpi-val   { font-size: 16px; font-weight: 800; margin-bottom: 4px; }
+  .kpi-label { font-size: 9px; color: var(--inkMid); }
+  .method-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; margin-bottom: 10px; cursor: pointer; transition: all .2s; }
+  .method-card.selected { background: rgba(74,124,219,.1); border-color: rgba(74,124,219,.4); }
+  .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+  .cal-day-label { text-align: center; font-size: 10px; color: var(--inkDim); padding-bottom: 6px; font-weight: 600; }
+  .cal-cell { aspect-ratio: 1; border-radius: 6px; display: flex; align-items: center; justify-content: center; flex-direction: column; font-size: 10px; }
+  .cal-cell.today { border: 2px solid var(--blue); }
+  .cal-cell.today-review { border: 2px solid var(--gold); }
+  .today-target-box { border-radius: 12px; padding: 16px 18px; margin-bottom: 20px; }
+  .log-section { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 18px; margin-bottom: 20px; }
+  .timer-box { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 18px; margin-bottom: 20px; }
+  .timer-display { font-size: 38px; font-weight: 800; letter-spacing: .08em; text-align: center; font-variant-numeric: tabular-nums; color: var(--ink); margin: 12px 0; }
+  .timer-btns { display: flex; gap: 8px; }
+  .timer-btn { flex: 1; padding: 10px; border-radius: 8px; border: none; font-size: 13px; font-weight: 700; cursor: pointer; font-family: inherit; transition: opacity .2s; }
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="topbar">
+    <div>
+      <span class="logo-main">IKIGAI</span>
+      <span class="logo-sub">INTELLIGENCE</span>
+    </div>
+    <div class="avatar">Y</div>
+  </div>
+  <div id="main">
+  <div class="hero">
+    <div class="hero-eyebrow">Développement intellectuel</div>
+    <div class="hero-title">Pense mieux.<br><span>Sois pris au sérieux.</span></div>
+    <div class="hero-sub">Concepts, lectures, défis — un domaine par jour.<br>L'intelligence se construit une idée à la fois.</div>
+  </div>
+  <div class="domains-grid">
+    
+      <button class="domain-card" onclick="openDomain(&#39;psycho&#39;)" style="color:#7C5CBF" onmouseover="this.style.borderColor=&#39;#7C5CBF66&#39;;this.style.background=&#39;#7C5CBF11&#39;" onmouseout="this.style.borderColor=&#39;var(--border)&#39;;this.style.background=&#39;var(--card)&#39;">
+        <div class="domain-icon">◉</div>
+        <div class="domain-name">Psychologie</div>
+        <div class="domain-sub">&amp; Influence</div>
+        <div class="domain-arrow" style="color:#7C5CBF">→</div>
+      </button>
+    
+      <button class="domain-card" onclick="openDomain(&#39;finance&#39;)" style="color:#C8A84A" onmouseover="this.style.borderColor=&#39;#C8A84A66&#39;;this.style.background=&#39;#C8A84A11&#39;" onmouseout="this.style.borderColor=&#39;var(--border)&#39;;this.style.background=&#39;var(--card)&#39;">
+        <div class="domain-icon">◈</div>
+        <div class="domain-name">Finance</div>
+        <div class="domain-sub">&amp; Économie</div>
+        <div class="domain-arrow" style="color:#C8A84A">→</div>
+      </button>
+    
+      <button class="domain-card" onclick="openDomain(&#39;leader&#39;)" style="color:#4A7CDB" onmouseover="this.style.borderColor=&#39;#4A7CDB66&#39;;this.style.background=&#39;#4A7CDB11&#39;" onmouseout="this.style.borderColor=&#39;var(--border)&#39;;this.style.background=&#39;var(--card)&#39;">
+        <div class="domain-icon">△</div>
+        <div class="domain-name">Leadership</div>
+        <div class="domain-sub">&amp; Autorité</div>
+        <div class="domain-arrow" style="color:#4A7CDB">→</div>
+      </button>
+    
+      <button class="domain-card" onclick="openDomain(&#39;philo&#39;)" style="color:#BF5C5C" onmouseover="this.style.borderColor=&#39;#BF5C5C66&#39;;this.style.background=&#39;#BF5C5C11&#39;" onmouseout="this.style.borderColor=&#39;var(--border)&#39;;this.style.background=&#39;var(--card)&#39;">
+        <div class="domain-icon">∅</div>
+        <div class="domain-name">Philosophie</div>
+        <div class="domain-sub">&amp; Pensée</div>
+        <div class="domain-arrow" style="color:#BF5C5C">→</div>
+      </button>
+    
+      <button class="domain-card" onclick="openDomain(&#39;histoire&#39;)" style="color:#5C9BBF" onmouseover="this.style.borderColor=&#39;#5C9BBF66&#39;;this.style.background=&#39;#5C9BBF11&#39;" onmouseout="this.style.borderColor=&#39;var(--border)&#39;;this.style.background=&#39;var(--card)&#39;">
+        <div class="domain-icon">◎</div>
+        <div class="domain-name">Histoire</div>
+        <div class="domain-sub">&amp; Géopolitique</div>
+        <div class="domain-arrow" style="color:#5C9BBF">→</div>
+      </button>
+    
+      <button class="domain-card" onclick="openDomain(&#39;sciences&#39;)" style="color:#4AC87A" onmouseover="this.style.borderColor=&#39;#4AC87A66&#39;;this.style.background=&#39;#4AC87A11&#39;" onmouseout="this.style.borderColor=&#39;var(--border)&#39;;this.style.background=&#39;var(--card)&#39;">
+        <div class="domain-icon">⬡</div>
+        <div class="domain-name">Sciences</div>
+        <div class="domain-sub">&amp; Technologie</div>
+        <div class="domain-arrow" style="color:#4AC87A">→</div>
+      </button>
+    
+  </div></div>
+  <nav id="bottomnav">
+    <button class="nav-btn active" id="nav-learn" onclick="navigate(&#39;learn&#39;)">
+      <span class="nav-icon">◈</span>
+      <span class="nav-label">Apprendre</span>
+    </button>
+    <button class="nav-btn" id="nav-reading" onclick="navigate(&#39;reading&#39;)">
+      <span class="nav-icon">◎</span>
+      <span class="nav-label">Lecture</span>
+    </button>
+  </nav>
+</div>
+
+<script>
+// ── DATA ──────────────────────────────────────────────────
+const C = {
+  bg:'#0B0C10',surface:'#111318',card:'#161820',border:'#1F2230',
+  borderHi:'#2E3248',ink:'#E8E6F0',inkMid:'#7B7F96',inkDim:'#3A3D50',
+  blue:'#4A7CDB',blueDim:'#253660',gold:'#C8A84A',goldDim:'#5C4C22',
+  red:'#C84A4A',green:'#4AC87A'
+};
+
+const DOMAINS = [
+  { id:'psycho',   label:'Psychologie', sub:'& Influence',    icon:'◉', color:'#7C5CBF' },
+  { id:'finance',  label:'Finance',     sub:'& Économie',     icon:'◈', color:'#C8A84A' },
+  { id:'leader',   label:'Leadership',  sub:'& Autorité',     icon:'△', color:'#4A7CDB' },
+  { id:'philo',    label:'Philosophie', sub:'& Pensée',       icon:'∅', color:'#BF5C5C' },
+  { id:'histoire', label:'Histoire',    sub:'& Géopolitique', icon:'◎', color:'#5C9BBF' },
+  { id:'sciences', label:'Sciences',    sub:'& Technologie',  icon:'⬡', color:'#4AC87A' },
+];
+
+const BOOKS = {
+  psycho:[
+    {title:'Influence',author:'Robert Cialdini',why:'Les 6 mécanismes d\'influence que tout le monde utilise sur toi — sans que tu le saches.'},
+    {title:'Thinking, Fast and Slow',author:'Daniel Kahneman',why:'Comment ton cerveau te trompe en permanence. Indispensable pour décider mieux.'},
+    {title:'Les 48 lois du pouvoir',author:'Robert Greene',why:'Manuel non censuré des dynamiques de pouvoir social. À lire avec recul critique.'},
+    {title:'La psychologie des foules',author:'Gustave Le Bon',why:'Comprendre pourquoi les groupes perdent leur jugement individuel.'},
+    {title:'Man\'s Search for Meaning',author:'Viktor Frankl',why:'Comment trouver un sens même dans les pires conditions. Fondateur du sérieux intérieur.'},
+  ],
+  finance:[
+    {title:'Père riche, père pauvre',author:'Robert Kiyosaki',why:'La distinction actif/passif qui change la façon de voir l\'argent.'},
+    {title:'L\'investisseur intelligent',author:'Benjamin Graham',why:'La bible de l\'investissement de valeur. Dense, mais transformateur.'},
+    {title:'La psychologie de l\'argent',author:'Morgan Housel',why:'Pourquoi nos comportements sabotent nos finances plus que nos connaissances.'},
+    {title:'Sapiens',author:'Yuval Noah Harari',why:'Comprendre l\'argent comme construction sociale — change tout ton rapport à la valeur.'},
+    {title:'The Millionaire Next Door',author:'Stanley & Danko',why:'Ce que font vraiment les riches. Pas ce qu\'on imagine.'},
+  ],
+  leader:[
+    {title:'Les 21 lois irréfutables du leadership',author:'John Maxwell',why:'Cadre structuré pour comprendre ce qui fait qu\'on suit quelqu\'un naturellement.'},
+    {title:'Start with Why',author:'Simon Sinek',why:'L\'autorité vient du pourquoi, pas du comment. Révèle la structure des grands leaders.'},
+    {title:'Extreme Ownership',author:'Jocko Willink',why:'Le leadership version Navy SEAL — responsabilité totale, sans excuses.'},
+    {title:'L\'art de la guerre',author:'Sun Tzu',why:'2500 ans d\'intelligence stratégique condensée. Court, dense, intemporel.'},
+    {title:'Never Split the Difference',author:'Chris Voss',why:'Négociation FBI appliquée à la vie quotidienne. Autorité par l\'écoute tactique.'},
+  ],
+  philo:[
+    {title:'Méditations',author:'Marc Aurèle',why:'Le journal intime d\'un empereur stoïcien. Ce que tu peux contrôler ou non.'},
+    {title:'Le monde de Sophie',author:'Jostein Gaarder',why:'Meilleure introduction à l\'histoire de la philosophie occidentale. Accessible.'},
+    {title:'Ainsi parlait Zarathoustra',author:'Nietzsche',why:'Le dépassement de soi comme boussole de vie. Difficile mais formateur.'},
+    {title:'L\'existentialisme est un humanisme',author:'Sartre',why:'Tu es ce que tu fais — pas ce que tu penses être. Court et direct.'},
+    {title:'Épictète — Manuel',author:'Épictète',why:'Le guide stoïcien pratique en 50 pages. Chaque page peut changer une décision.'},
+  ],
+  histoire:[
+    {title:'Sapiens',author:'Yuval Noah Harari',why:'L\'histoire de l\'humanité vue depuis 70 000 ans. Recontextualise tout.'},
+    {title:'Guns, Germs and Steel',author:'Jared Diamond',why:'Pourquoi certaines civilisations ont dominé d\'autres — sans racisme, avec science.'},
+    {title:'Le choc des civilisations',author:'Samuel Huntington',why:'Grille de lecture géopolitique toujours d\'actualité pour comprendre les conflits.'},
+    {title:'La route du servage',author:'Friedrich Hayek',why:'Comment les régimes totalitaires s\'installent progressivement. Capital pour penser.'},
+    {title:'1984',author:'George Orwell',why:'Fiction qui prédit les mécanismes de contrôle social mieux que tout essai.'},
+  ],
+  sciences:[
+    {title:'Une brève histoire du temps',author:'Stephen Hawking',why:'Relativité, trous noirs, Big Bang — expliqués sans formules. Humilité cosmique.'},
+    {title:'The Gene',author:'Siddhartha Mukherjee',why:'L\'ADN, l\'évolution, et ce que la génétique dit vraiment de nous.'},
+    {title:'Le gène égoïste',author:'Richard Dawkins',why:'Évolution vue du gène, pas de l\'individu. Renverse l\'intuition.'},
+    {title:'Zero to One',author:'Peter Thiel',why:'Comment penser l\'innovation technologique. Lecture obligatoire si tu construis.'},
+    {title:'La science de l\'information',author:'James Gleick',why:'Comment l\'information structure la réalité — de l\'ADN à l\'IA.'},
+  ],
+};
+
+// Concepts pré-rédigés, 3 par domaine, rotation aléatoire
+const CONCEPTS = {
+  psycho:[
+    `Le biais de confirmation n'est pas une faiblesse — c'est ton cerveau qui optimise sa survie.\n\nTon cerveau traite 11 millions de bits par seconde, mais n'en est conscient que de 40. Pour gérer ce flux, il filtre : il retient ce qui confirme ce qu'il croit déjà. Résultat : un policier convaincu de la culpabilité d'un suspect verra dans chaque détail la preuve de sa thèse, même les preuves contraires.\n\nApplication cette semaine : prends une conviction forte que tu as — sur l'argent, les gens, ton avenir. Passe 10 minutes à chercher activement des preuves qu'elle est fausse. C'est inconfortable. C'est exactement pour ça que ça marche.`,
+    `La réciprocité est l'arme sociale la plus puissante et la plus sous-utilisée.\n\nCialdini l'a prouvé : les gens remboursent toujours une dette sociale, même si le cadeau initial était non sollicité et de faible valeur. Le restaurant qui offre une menthe avec l'addition augmente le pourboire de 14%. Pas parce que la menthe vaut quelque chose — parce qu'elle crée une obligation psychologique.\n\nApplication cette semaine : rends un service concret et inattendu à quelqu'un que tu veux avoir dans ton camp. Ne demande rien en retour. Observe.`,
+    `L'effet de halo déforme chaque jugement que tu portes sur queltrouver un.\n\nQuand on perçoit une qualité positive chez quelqu'un — une belle présence, un costume bien coupé, une poignée de main ferme — le cerveau extrapole : il suppose d'autres qualités positives. Les études montrent que les gens de grande taille sont perçus comme plus compétents, les personnes attirantes comme plus intelligentes. Ce biais structure chaque entretien d'embauche, chaque audience, chaque négociation.\n\nApplication cette semaine : soigne un détail de ton apparence ou de ta posture que tu négliges. Un seul. L'effet de halo fait le reste.`,
+  ],
+  finance:[
+    `La différence entre actif et passif est la seule leçon financière qui compte vraiment.\n\nKiyosaki l'a formulé brutalement : un actif met de l'argent dans ta poche. Un passif en sort. Ta voiture est un passif. Ton Airbnb est un actif. La plupart des gens passent leur vie à acheter des passifs en croyant acheter des actifs — la maison principale en est l'exemple parfait : elle coûte chaque mois sans jamais rapporter.\n\nApplication cette semaine : liste tout ce que tu possèdes. Classe chaque élément : actif ou passif. Le résultat sera inconfortable. C'est le point de départ.`,
+    `L'intérêt composé est la seule force dans l'univers qui travaille pendant que tu dors.\n\nEinstein l'aurait qualifié de "huitième merveille du monde" — je ne peux pas confirmer la citation, mais le principe est incontestable. 1000€ placés à 8% par an pendant 30 ans deviennent 10 000€ sans rien faire. Le problème : le cerveau humain est câblé pour le court terme. Il ne ressent pas la puissance des 20 premières années, qui semblent stériles.\n\nApplication cette semaine : calcule ce que 300€/mois investis dès maintenant représentent dans 20 ans à 7% de rendement moyen. Le chiffre va te surprendre.`,
+    `Le prix que tu paies n'a aucun rapport avec la valeur que tu reçois.\n\nBuffett a construit sa fortune sur une idée simple : le marché est parfois stupide. Quand la peur domine, des actifs de grande valeur se vendent à prix bradé. Quand l'euphorie domine, des actifs médiocres se vendent au prix de l'or. La plupart des gens font l'inverse de ce qu'il faudrait — ils achètent quand ça monte et vendent quand ça baisse.\n\nApplication cette semaine : identifie un actif (action, bien immobilier, compétence) que tu considères sous-évalué. Commence à construire ta thèse d'investissement.`,
+  ],
+  leader:[
+    `L'autorité naturelle ne se demande pas — elle se dégage quand tu arrêtes d'en avoir besoin.\n\nLes études sur le leadership montrent que les personnes perçues comme les plus influentes sont celles qui parlent moins, écoutent plus, et ne cherchent pas à convaincre. L'insécurité se trahit dans le besoin de validation. La solidité se trahit dans la capacité à laisser un silence s'installer sans le remplir.\n\nApplication cette semaine : dans ta prochaine réunion ou conversation importante, parle 30% moins que d'habitude. Pose une question plutôt que d'affirmer. Observe comment la dynamique change.`,
+    `La prise de responsabilité totale est la compétence leadership la plus rare et la plus puissante.\n\nJocko Willink l'a appris en opération : quand une unité échoue, c'est toujours la faute du chef — même si c'est un subalterne qui a fait l'erreur. Parce que le chef aurait dû mieux former, mieux briefer, mieux superviser. Cette posture est insupportable pour l'ego. Elle est également la seule qui permette de vraiment progresser.\n\nApplication cette semaine : identifie un problème dans ta vie que tu attribues à quelqu'un d'autre. Réécris-le en commençant par "J'aurais pu…". C'est douloureux. C'est exactement ça, le leadership.`,
+    `Sun Tzu n'a jamais parlé de force brute — il parlait de positionnement.\n\nLa leçon centrale de L'Art de la Guerre n'est pas de battre l'ennemi : c'est de choisir ses batailles de façon à avoir déjà gagné avant de commencer. "L'homme habile ne lutte pas — il se place dans une position qui rend la victoire inévitable." Dans une négociation, dans une carrière, dans un projet : la plupart des gens perdent parce qu'ils se positionnent mal, pas parce qu'ils manquent de talent.\n\nApplication cette semaine : identifie une situation dans ta vie où tu te bats en force. Demande-toi comment changer de terrain plutôt que de pousser plus fort.`,
+  ],
+  philo:[
+    `Le stoïcisme n'est pas de l'indifférence — c'est de la précision chirurgicale sur ce qui mérite ton énergie.\n\nMarc Aurèle était l'homme le plus puissant du monde connu. Il passait ses matins à écrire dans un journal : "Certaines choses dépendent de moi, d'autres non." Pas comme mantra — comme outil de tri. Chaque problème entrait dans une des deux catégories. Sur la première : agir pleinement. Sur la seconde : lâcher totalement. Cette discipline mentale lui permettait de gouverner un empire sans être écrasé par lui.\n\nApplication cette semaine : prends ton problème principal du moment. Écris deux listes : ce qui dépend de toi, ce qui n'en dépend pas. N'agis que sur la première.`,
+    `Nietzsche n'a pas dit "ce qui ne te tue pas te rend plus fort" — il a dit quelque chose de plus exigeant.\n\nLa vraie formule : amor fati — aimer ce qui arrive, non par résignation, mais comme carburant. Pas accepter passivement les obstacles, mais les vouloir, parce qu'ils révèlent qui tu es vraiment. Un homme qui ne rencontre jamais de résistance ne sait pas ce dont il est capable. L'adversité n'est pas un problème à résoudre — c'est le matériau avec lequel tu te construis.\n\nApplication cette semaine : prends la contrainte qui t'agace le plus en ce moment. Reformule-la comme une information sur ce que tu dois développer. Change le regard, pas la situation.`,
+    `Sartre a dit une chose que peu de gens veulent vraiment entendre : tu es entièrement responsable de qui tu es.\n\nPas tes parents, pas ta classe sociale, pas tes gènes. "L'existence précède l'essence" signifie : tu n'arrives pas dans le monde avec une nature fixe. Tu te définis par ce que tu fais, pas ce que tu penses être. Un homme qui se dit courageux mais ne prend jamais de risques n'est pas courageux. C'est aussi simple — et aussi difficile — que ça.\n\nApplication cette semaine : identifie un trait que tu revendiques ("je suis quelqu'un de généreux", "je suis discipliné"). Trouve les preuves concrètes de ce trait dans tes actes des 7 derniers jours. Ajuste si nécessaire.`,
+  ],
+  histoire:[
+    `Les empires ne s'effondrent pas parce qu'ils sont attaqués de l'extérieur — ils s'effondrent parce qu'ils pourrissent de l'intérieur.\n\nRome, l'URSS, l'empire ottoman : dans chaque cas, le déclin précède la chute de plusieurs décennies. Les signes sont identiques — complexification excessive des structures, perte de capacité à intégrer les élites compétentes, corruption systémique, perte du sens commun. Huntington l'a montré : les civilisations qui survivent sont celles qui maintiennent une cohérence interne, pas celles qui ont la plus grande armée.\n\nApplication cette semaine : applique cette grille à une organisation que tu connais bien. Quels sont les signes de déclin interne ? Qu'est-ce que ça t'apprend sur où placer ton énergie ?`,
+    `La géopolitique ne change pas — seuls les acteurs changent.\n\nIl y a 2500 ans, Thucydide décrivait la guerre du Péloponnèse : une puissance établie (Sparte) face à une puissance montante (Athènes). Le conflit était presque inévitable — non par haine, mais par mécanique de pouvoir. Aujourd'hui, États-Unis face à Chine. Le "piège de Thucydide" : dans 16 cas historiques de puissance montante vs puissance établie, 12 ont débouché sur une guerre. Comprendre l'histoire, c'est avoir une carte quand les autres naviguent à vue.\n\nApplication cette semaine : prends un conflit géopolitique actuel. Identifie qui est la puissance établie, qui est la montante. Relis l'histoire pour trouver l'analogie.`,
+    `Hayek a prédit en 1944 ce que la plupart des gens n'ont compris qu'en vivant sous un régime autoritaire.\n\nLa thèse de "La Route du Servage" : toute planification centrale, même avec les meilleures intentions, concentre inévitablement le pouvoir et détruit la liberté. Non par malveillance des planificateurs, mais par logique du système. Pour maintenir le plan, il faut contrôler l'information. Pour contrôler l'information, il faut contrôler les gens. Le chemin vers la servitude est toujours pavé de bonnes intentions.\n\nApplication cette semaine : identifie dans ta vie professionnelle ou personnelle une règle ou structure qui a été créée avec de bonnes intentions mais qui produit l'effet inverse. C'est Hayek en miniature.`,
+  ],
+  sciences:[
+    `L'évolution n'optimise pas pour ton bonheur — elle optimise pour ta reproduction. Ce n'est pas la même chose.\n\nDawkins l'a montré avec le gène égoïste : tu n'es pas un individu qui se reproduit. Tu es un véhicule que tes gènes utilisent pour se copier. Ton cerveau est câblé pour des récompenses à court terme (sucre, statut, sexe) parce que ça marchait en savane. Dans un monde d'abondance, ces mêmes circuits te poussent vers l'addiction, l'anxiété sociale et la procrastination. Comprendre la mécanique, c'est reprendre la main sur elle.\n\nApplication cette semaine : identifie un comportement que tu as du mal à contrôler. Reformule-le en termes évolutifs : à quel besoin ancestral répond-il ? Cette reformulation change le rapport que tu as avec lui.`,
+    `L'information est la structure fondamentale de la réalité — pas la matière, pas l'énergie.\n\nGleick l'a démontré : depuis l'ADN jusqu'à l'internet, tout système complexe est d'abord un système de traitement de l'information. Shannon a montré en 1948 que l'information peut être quantifiée, compressée, transmise avec une fidélité parfaite — c'est le fondement de tout ce qui est numérique. Ce que ça implique : comprendre comment l'information circule dans un système, c'est comprendre comment le système fonctionne et où il va casser.\n\nApplication cette semaine : cartographie comment l'information circule dans ton équipe ou ta structure. Où est-ce qu'elle se perd ? Où est-ce qu'elle se distord ? C'est là que sont les vrais problèmes.`,
+    `Hawking nous a appris que l'univers n'a pas besoin de créateur — il a juste besoin de lois physiques.\n\nLa relativité générale et la mécanique quantique décrivent deux réalités incompatibles : l'une gouverne le très grand, l'autre le très petit. La physique théorique cherche depuis 50 ans à les unifier. Ce qu'on sait : le temps n'est pas absolu, l'espace est courbé par la masse, le passé et le futur ne sont pas des entités fixes. Ces découvertes ne changent pas ta vie quotidienne — mais elles changent radicalement la façon dont tu penses la causalité, la certitude, et les limites du connaissable.\n\nApplication cette semaine : lis le premier chapitre d'Une brève histoire du temps. Une heure. L'humilité cosmique que ça génère est un antidote au dogmatisme.`,
+  ],
+};
+
+const DEFIS = {
+  psycho:[
+    `La vérité sur tes biais — exercice d'audit mental.\n\nPendant 48h, note dans un carnet chaque fois que tu te surprends à chercher confirmation plutôt qu'information. Chaque jugement rapide sur une personne, chaque conclusion tirée avant d'avoir les faits. En fin de 48h : quels sont tes 3 biais dominants ? Comment ont-ils influencé une décision importante récemment ?`,
+    `Analyse d'une influence subie.\n\nRepense à la dernière décision importante que tu as prise (achat, accord, choix). Décortique-la : quels mécanismes d'influence étaient à l'œuvre ? Réciprocité ? Rareté ? Preuve sociale ? Autorité ? Ce n'est pas une question de manipulation — c'est une question de lucidité. Documente ton analyse en 1 page.`,
+  ],
+  finance:[
+    `Bilan de patrimoine en 30 minutes.\n\nListe tout ce que tu possèdes. Pour chaque élément : actif ou passif ? Quelle est la valeur actuelle ? Quel est le flux mensuel généré (positif ou négatif) ? À la fin : quelle est ta situation nette réelle ? Ce chiffre, tu dois le connaître exactement. La plupart des gens ne le savent pas.`,
+    `Simule ton futur financier.\n\nPrends ton épargne mensuelle actuelle. Applique 3 scénarios de rendement : 4%, 7%, 10%. Sur 10, 20, 30 ans. Calcule le résultat dans chaque cas. Ensuite : que se passerait-il si tu augmentais ton épargne mensuelle de 200€ dès le mois prochain ? Où est l'effet de levier dans ta situation ?`,
+  ],
+  leader:[
+    `Audit de ton impact réel.\n\nPense aux 5 dernières situations où tu as eu une influence sur les autres (décisions d'équipe, conversations importantes, conflits). Dans chaque cas : tu as mené ou tu as subi ? Tu as posé les termes ou tu les as acceptés ? Quel pattern se dégage ? Écris-le sans te juger. C'est ton point de départ.`,
+    `Prépare une conversation difficile.\n\nIdentifie une conversation que tu repousses depuis plus de 2 semaines. Prépare-la par écrit : quel est l'objectif réel ? Quelle est la position de l'autre ? Quel terrain commun existe ? Quand et comment vas-tu l'avoir ? La préparer prend 20 minutes. Ne pas la préparer te coûte des semaines d'énergie diffuse.`,
+  ],
+  philo:[
+    `Le test de la mort — clarifier tes priorités réelles.\n\nStoïcisme appliqué : imagine que tu apprends aujourd'hui que tu as 6 mois à vivre. Quelles seraient tes 3 priorités absolues ? Maintenant : dans quelle mesure tes actions de cette semaine reflètent-elles ces priorités ? L'écart entre les deux, c'est exactement là où tu perds ton temps.`,
+    `Écris ta philosophie personnelle.\n\nEn 200 mots maximum : quelles sont les 3 valeurs qui guident vraiment tes décisions — pas celles que tu voudrais avoir, celles qui guident tes actes réels ? Comment ces valeurs ont-elles évolué au cours des 10 dernières années ? Sont-elles choisies ou héritées sans examen ?`,
+  ],
+  histoire:[
+    `Analyse d'un cycle historique.\n\nChoisis un empire ou une grande organisation qui a décliné (Rome, Nokia, l'URSS, Kodak). Identifie les 5 signaux faibles de déclin qui étaient visibles 10 ans avant l'effondrement. Maintenant : lesquels de ces signaux vois-tu dans une organisation ou institution que tu côtoies aujourd'hui ?`,
+    `Cartographie géopolitique personnelle.\n\nPrends le conflit géopolitique qui t'intéresse le plus en ce moment. Identifie : les acteurs réels (pas juste les officiels), leurs intérêts réels (pas leurs discours), et les scénarios possibles à 5 ans. L'exercice n'est pas de prédire — c'est de penser en termes de systèmes plutôt que d'événements.`,
+  ],
+  sciences:[
+    `Déconstruis une certitude.\n\nChoisis une chose que tu tiens pour vraie sans avoir vérifié les preuves (sur la santé, la nutrition, l'éducation, l'économie). Passe 30 minutes à chercher les études primaires, pas les articles de vulgarisation. Quelle est la solidité réelle de cette croyance ? Qu'est-ce que ça change ?`,
+    `Applique le rasoir d'Occam.\n\nPrends un problème complexe que tu n'arrives pas à résoudre. Liste toutes les explications possibles. Applique le rasoir d'Occam : quelle est l'explication la plus simple qui rend compte de tous les faits ? Les problèmes complexes ont presque toujours une cause simple. La chercher est un exercice de rigueur mentale.`,
+  ],
+};
+
+// Méthodes de lecture
+const METHODS = {
+  standard:{ label:'Lecture active', desc:'Tu lis, tu surlignes, tu notes 3 idées clés à la fin de chaque session.', ppd:20, reviewEvery:5 },
+  deep:    { label:'Lecture profonde', desc:'Moins de pages, mais tu rédiges un résumé de chaque chapitre dans tes propres mots.', ppd:10, reviewEvery:3 },
+  sprint:  { label:'Lecture rapide', desc:'Tu lis vite pour identifier les 20% d\'idées qui valent 80% du livre.', ppd:35, reviewEvery:0 },
+};
+
+// ── STATE ─────────────────────────────────────────────────
+let state = {
+  screen: 'learn',      // learn | reading
+  domain: null,
+  tab: 'concept',       // concept | books | defi
+  conceptIdx: {},       // { domainId: index }
+  defiIdx: {},
+  plans: [],
+  plannerView: 'list',  // list | add | detail | calendar
+  selectedPlan: null,
+  addForm: { title:'', author:'', pages:'', method:'standard', startDate:today() },
+  logPages: '',
+  logDate: today(),
+  timer: { running: false, seconds: 0, intervalId: null },
+};
+
+function loadStorage() {
+  try {
+    const s = JSON.parse(localStorage.getItem('ikigai_v3') || '{}');
+    if (s.plans) state.plans = s.plans;
+    if (s.conceptIdx) state.conceptIdx = s.conceptIdx;
+    if (s.defiIdx) state.defiIdx = s.defiIdx;
+  } catch {}
+}
+function saveStorage() {
+  localStorage.setItem('ikigai_v3', JSON.stringify({ plans: state.plans, conceptIdx: state.conceptIdx, defiIdx: state.defiIdx }));
+}
+loadStorage();
+
+// ── UTILS ─────────────────────────────────────────────────
+function today() {
+  return new Date().toISOString().slice(0,10);
+}
+function addDays(ds, n) {
+  const d = new Date(ds + 'T12:00:00');
+  d.setDate(d.getDate() + n);
+  return d.toISOString().slice(0,10);
+}
+function fmtDate(ds) {
+  return new Date(ds + 'T12:00:00').toLocaleDateString('fr-FR',{day:'numeric',month:'short'});
+}
+function esc(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function getPagesRead(plan) {
+  return (plan.log||[]).reduce((a,b)=>a+b.pages,0);
+}
+function getDaysLeft(plan) {
+  return Math.ceil((new Date(plan.endDate+'T12:00:00') - new Date()) / 86400000);
+}
+function getStreak(plan) {
+  let streak=0, d=new Date();
+  const dates = new Set((plan.log||[]).map(l=>l.date));
+  while(true){ const ds=d.toISOString().slice(0,10); if(dates.has(ds)){streak++;d.setDate(d.getDate()-1);}else break; }
+  return streak;
+}
+function buildPlan(f) {
+  const m = METHODS[f.method];
+  const pages = parseInt(f.pages)||200;
+  const schedule = [];
+  let remaining = pages, readCount = 0, cur = f.startDate;
+  while(remaining > 0) {
+    const isRev = m.reviewEvery > 0 && readCount > 0 && readCount % m.reviewEvery === 0;
+    if(isRev) {
+      schedule.push({date:cur,type:'review',pages:0});
+    } else {
+      const p = Math.min(m.ppd, remaining);
+      schedule.push({date:cur,type:'read',pages:p});
+      remaining -= p; readCount++;
+    }
+    cur = addDays(cur,1);
+  }
+  return {
+    id: Date.now(),
+    title: f.title, author: f.author,
+    totalPages: pages, method: f.method,
+    startDate: f.startDate,
+    endDate: schedule.length ? schedule[schedule.length-1].date : f.startDate,
+    schedule, log: [], status:'active'
+  };
+}
+
+// ── NAVIGATE ──────────────────────────────────────────────
+function navigate(screen) {
+  state.screen = screen;
+  if(screen === 'learn') { state.domain = null; state.tab = 'concept'; }
+  if(screen === 'reading') { state.plannerView = 'list'; }
+  // Stop timer when leaving detail view
+  if(screen !== 'reading' || state.plannerView !== 'detail') {
+    timerPause();
+    state.timer.seconds = 0;
+  }
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('nav-'+screen)?.classList.add('active');
+  render();
+}
+function openDomain(id) {
+  state.domain = DOMAINS.find(d=>d.id===id);
+  state.tab = 'concept';
+  if(state.conceptIdx[id] === undefined) state.conceptIdx[id] = 0;
+  render();
+}
+function setTab(tab) {
+  state.tab = tab;
+  render();
+}
+function nextConcept() {
+  const id = state.domain.id;
+  const arr = CONCEPTS[id]||[];
+  state.conceptIdx[id] = ((state.conceptIdx[id]||0)+1) % arr.length;
+  saveStorage();
+  render();
+}
+function nextDefi() {
+  const id = state.domain.id;
+  const arr = DEFIS[id]||[];
+  state.defiIdx[id] = ((state.defiIdx[id]||0)+1) % arr.length;
+  saveStorage();
+  render();
+}
+
+// Planner actions
+function showAdd() { state.plannerView='add'; state.addForm={title:'',author:'',pages:'',method:'standard',startDate:today()}; render(); }
+function showList() { state.plannerView='list'; render(); }
+function setMethod(m) { state.addForm.method=m; render(); }
+function setField(k,v) { state.addForm[k]=v; if(k==='pages') render(); }
+function selectBookFromLib(idx) {
+  const allBooks = Object.entries(BOOKS).flatMap(([did,list])=>list.map(b=>({...b,did})));
+  const b = allBooks[idx];
+  if(!b) return;
+  state.addForm.title = b.title;
+  state.addForm.author = b.author;
+  render();
+}
+function submitPlan() {
+  if(!state.addForm.title||!state.addForm.pages) return;
+  const plan = buildPlan(state.addForm);
+  state.plans.push(plan);
+  saveStorage();
+  state.plannerView='list'; render();
+}
+function openPlan(id) {
+  state.selectedPlan = state.plans.find(p=>p.id===id);
+  state.plannerView='detail'; state.logPages=''; state.logDate=today();
+  timerPause(); state.timer.seconds=0; state.timer.running=false;
+  render();
+}
+function deletePlan(id) {
+  if(!confirm('Supprimer ce plan ?')) return;
+  state.plans = state.plans.filter(p=>p.id!==id);
+  saveStorage(); state.plannerView='list'; render();
+}
+function logSession() {
+  const p = parseInt(state.logPages);
+  if(!p||p<=0||!state.selectedPlan) return;
+  state.plans = state.plans.map(pl => {
+    if(pl.id!==state.selectedPlan.id) return pl;
+    const log = [...pl.log,{date:state.logDate,pages:p}];
+    const total = log.reduce((a,b)=>a+b.pages,0);
+    return {...pl, log, status: total>=pl.totalPages?'done':'active'};
+  });
+  state.selectedPlan = state.plans.find(p=>p.id===state.selectedPlan.id);
+  state.logPages=''; saveStorage(); render();
+}
+function openCalendar() { state.plannerView='calendar'; render(); }
+function backToDetail() { state.plannerView='detail'; render(); }
+
+// ── TIMER ─────────────────────────────────────────────────
+function fmtTimer(s) {
+  const h = Math.floor(s/3600);
+  const m = Math.floor((s%3600)/60);
+  const sec = s%60;
+  return (h>0?String(h).padStart(2,'0')+':':'')+String(m).padStart(2,'0')+':'+String(sec).padStart(2,'0');
+}
+function timerStart() {
+  if(state.timer.running) return;
+  state.timer.running = true;
+  state.timer.intervalId = setInterval(()=>{
+    state.timer.seconds++;
+    const el = document.getElementById('timer-display');
+    if(el) el.textContent = fmtTimer(state.timer.seconds);
+  }, 1000);
+  const btn = document.getElementById('timer-toggle');
+  if(btn) { btn.textContent='⏸ Pause'; btn.style.background='var(--border)'; btn.style.color='var(--ink)'; }
+}
+function timerPause() {
+  if(!state.timer.running) return;
+  state.timer.running = false;
+  clearInterval(state.timer.intervalId);
+  const btn = document.getElementById('timer-toggle');
+  if(btn) { btn.textContent='▶ Reprendre'; btn.style.background='var(--blue)'; btn.style.color='#fff'; }
+}
+function timerToggle() {
+  if(state.timer.running) timerPause(); else timerStart();
+}
+function timerReset() {
+  timerPause();
+  state.timer.seconds = 0;
+  state.timer.running = false;
+  const el = document.getElementById('timer-display');
+  if(el) el.textContent = fmtTimer(0);
+  const btn = document.getElementById('timer-toggle');
+  if(btn) { btn.textContent='▶ Démarrer'; btn.style.background='var(--blue)'; btn.style.color='#fff'; }
+}
+function renderTimer() {
+  const running = state.timer.running;
+  return `
+  <div class="timer-box">
+    <div style="font-size:11px;color:var(--inkMid);letter-spacing:.1em;text-transform:uppercase;font-weight:600;margin-bottom:4px">⏱ Minuteur de session</div>
+    <div class="timer-display" id="timer-display">${fmtTimer(state.timer.seconds)}</div>
+    <div class="timer-btns">
+      <button id="timer-toggle" class="timer-btn"
+        style="background:${running?'var(--border)':'var(--blue)'};color:${running?'var(--ink)':'#fff'}"
+        onclick="timerToggle()">${running?'⏸ Pause':'▶ Démarrer'}</button>
+      <button class="timer-btn" style="background:var(--border);color:var(--inkMid)" onclick="timerReset()">↺ Reset</button>
+    </div>
+  </div>`;
+}
+
+// ── RENDER ────────────────────────────────────────────────
+function render() {
+  const main = document.getElementById('main');
+  if(state.screen==='learn') {
+    main.innerHTML = state.domain ? renderDomain() : renderHome();
+  } else {
+    main.innerHTML = renderPlanner();
+  }
+}
+
+// ── HOME ──────────────────────────────────────────────────
+function renderHome() {
+  return `
+  <div class="hero">
+    <div class="hero-eyebrow">Développement intellectuel</div>
+    <div class="hero-title">Pense mieux.<br><span>Sois pris au sérieux.</span></div>
+    <div class="hero-sub">Concepts, lectures, défis — un domaine par jour.<br>L'intelligence se construit une idée à la fois.</div>
+  </div>
+  <div class="domains-grid">
+    ${DOMAINS.map(d=>`
+      <button class="domain-card" onclick="openDomain('${d.id}')"
+        style="color:${d.color}"
+        onmouseover="this.style.borderColor='${d.color}66';this.style.background='${d.color}11'"
+        onmouseout="this.style.borderColor='var(--border)';this.style.background='var(--card)'">
+        <div class="domain-icon">${d.icon}</div>
+        <div class="domain-name">${esc(d.label)}</div>
+        <div class="domain-sub">${esc(d.sub)}</div>
+        <div class="domain-arrow" style="color:${d.color}">→</div>
+      </button>
+    `).join('')}
+  </div>`;
+}
+
+// ── DOMAIN ───────────────────────────────────────────────
+function renderDomain() {
+  const d = state.domain;
+  const books = BOOKS[d.id]||[];
+  const concepts = CONCEPTS[d.id]||[];
+  const defis = DEFIS[d.id]||[];
+  const tabs = [
+    {id:'concept',label:'Concept du jour'},
+    {id:'books',  label:'Lectures'},
+    {id:'defi',   label:'Défi'},
+  ];
+  let content = '';
+  if(state.tab==='concept') {
+    const idx = state.conceptIdx[d.id]||0;
+    const txt = esc(concepts[idx]||'Aucun concept disponible.').replace(/\n/g,'<br>');
+    content = `
+      <div class="concept-box">${txt}</div>
+      <button class="refresh-btn" style="color:${d.color};border-color:${d.color}44;background:${d.color}14"
+        onclick="nextConcept()">↻ &nbsp;Autre concept</button>`;
+  } else if(state.tab==='books') {
+    content = `
+      <div class="section-title">Bibliothèque sélectionnée</div>
+      ${books.map(b=>`
+        <div class="book-card">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start">
+            <div>
+              <div class="book-title">${esc(b.title)}</div>
+              <div class="book-author">${esc(b.author)}</div>
+            </div>
+            <div style="width:32px;height:42px;background:${d.color}22;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:14px;color:${d.color};flex-shrink:0;margin-left:12px">${d.icon}</div>
+          </div>
+          <div class="book-why">${esc(b.why)}</div>
+        </div>`).join('')}`;
+  } else if(state.tab==='defi') {
+    const idx = state.defiIdx[d.id]||0;
+    const txt = esc(defis[idx]||'Aucun défi disponible.').replace(/\n/g,'<br>');
+    content = `
+      <div class="concept-box">${txt}</div>
+      <button class="refresh-btn" style="color:${d.color};border-color:${d.color}44;background:${d.color}14"
+        onclick="nextDefi()">↻ &nbsp;Autre défi</button>`;
+  }
+
+  return `
+  <div class="domain-header">
+    <div class="domain-header-top">
+      <button class="back-btn" onclick="navigate('learn')">←</button>
+      <span style="font-size:22px;color:${d.color}">${d.icon}</span>
+      <div>
+        <div style="font-size:16px;font-weight:700;color:var(--ink)">${esc(d.label)}</div>
+        <div style="font-size:11px;color:var(--inkMid)">${esc(d.sub)}</div>
+      </div>
+    </div>
+    <div class="tabs">
+      ${tabs.map(t=>`
+        <button class="tab-btn ${state.tab===t.id?'active':''}"
+          style="${state.tab===t.id?`color:${d.color};border-bottom-color:${d.color}`:'color:var(--inkMid);border-bottom-color:transparent'}"
+          onclick="setTab('${t.id}')">${t.label}</button>
+      `).join('')}
+    </div>
+  </div>
+  <div class="tab-content">${content}</div>`;
+}
+
+// ── PLANNER ───────────────────────────────────────────────
+function renderPlanner() {
+  if(state.plannerView==='list') return renderPlanList();
+  if(state.plannerView==='add')  return renderAddPlan();
+  if(state.plannerView==='detail') return renderPlanDetail();
+  if(state.plannerView==='calendar') return renderCalendar();
+  return '';
+}
+
+function renderPlanList() {
+  const empty = state.plans.length===0 ? `
+    <div style="text-align:center;padding:48px 20px;color:var(--inkDim)">
+      <div style="font-size:32px;margin-bottom:12px">◎</div>
+      <div style="font-size:14px">Aucun livre planifié.<br>Ajoute ton premier.</div>
+    </div>` : '';
+
+  const cards = state.plans.map(plan=>{
+    const pr = getPagesRead(plan);
+    const pct = Math.min(100,Math.round(pr/plan.totalPages*100));
+    const dl = getDaysLeft(plan);
+    const done = plan.status==='done';
+    const t = today();
+    const todaySlot = plan.schedule.find(s=>s.date===t);
+    return `
+    <div class="plan-card" onclick="openPlan(${plan.id})"
+      style="${done?'border-color:'+C.green+'44':''}">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px">
+        <div style="flex:1;padding-right:12px">
+          <div style="font-size:14px;font-weight:700;color:var(--ink)">${esc(plan.title)}</div>
+          <div style="font-size:11px;color:var(--inkMid);margin-top:2px">${esc(plan.author)} · ${METHODS[plan.method].label}</div>
+        </div>
+        ${done?`<span style="font-size:18px;color:var(--green)">✓</span>`:`<span style="font-size:12px;color:var(--blue);font-weight:700">${pct}%</span>`}
+      </div>
+      <div class="progress-bar-wrap">
+        <div class="progress-bar" style="width:${pct}%;background:${done?C.green:C.blue}"></div>
+      </div>
+      <div style="display:flex;justify-content:space-between">
+        <span style="font-size:11px;color:var(--inkMid)">${pr} / ${plan.totalPages} pages</span>
+        ${!done && todaySlot
+          ? `<span style="font-size:11px;color:var(--gold);font-weight:600">Aujourd'hui : ${todaySlot.type==='review'?'🔄 Révision':'📖 '+todaySlot.pages+' pages'}</span>`
+          : !done ? `<span style="font-size:11px;color:var(--inkDim)">J-${Math.max(0,dl)} (${fmtDate(plan.endDate)})</span>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+
+  return `
+  <div style="padding:20px 20px 100px">
+    <div class="planner-header">
+      <div>
+        <div style="font-size:18px;font-weight:800;color:var(--ink)">Plan de lecture</div>
+        <div style="font-size:11px;color:var(--inkMid);margin-top:2px">Lire vite ne sert à rien. Retenir, si.</div>
+      </div>
+      <button onclick="showAdd()" style="background:var(--blue);border:none;border-radius:10px;padding:9px 16px;color:#fff;font-weight:700;font-size:13px;cursor:pointer">+ Ajouter</button>
+    </div>
+    ${empty}${cards}
+  </div>`;
+}
+
+function renderAddPlan() {
+  const f = state.addForm;
+  const canPreview = f.pages && parseInt(f.pages)>0;
+  let preview = '';
+  if(canPreview) {
+    const p = buildPlan(f);
+    const readDays = p.schedule.filter(s=>s.type==='read').length;
+    const revDays  = p.schedule.filter(s=>s.type==='review').length;
+    preview = `
+    <div style="background:${C.blue}12;border:1px solid ${C.blue}33;border-radius:12px;padding:16px;margin-bottom:24px">
+      <div style="font-size:11px;color:var(--blue);letter-spacing:.12em;text-transform:uppercase;font-weight:700;margin-bottom:10px">Aperçu du plan</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div><div style="font-size:10px;color:var(--inkMid);margin-bottom:3px">Fin prévue</div><div style="font-size:15px;color:var(--blue);font-weight:700">${fmtDate(p.endDate)}</div></div>
+        <div><div style="font-size:10px;color:var(--inkMid);margin-bottom:3px">Durée totale</div><div style="font-size:15px;color:var(--blue);font-weight:700">${p.schedule.length} jours</div></div>
+        <div><div style="font-size:10px;color:var(--inkMid);margin-bottom:3px">Séances lecture</div><div style="font-size:15px;color:var(--blue);font-weight:700">${readDays} jours</div></div>
+        <div><div style="font-size:10px;color:var(--inkMid);margin-bottom:3px">Séances révision</div><div style="font-size:15px;color:var(--blue);font-weight:700">${revDays} jours</div></div>
+      </div>
+    </div>`;
+  }
+
+  const allBooks = Object.entries(BOOKS).flatMap(([did,list])=>list.map(b=>({...b,did})));
+
+  return `
+  <div style="padding:20px 20px 100px">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:24px">
+      <button class="back-btn" onclick="showList()">←</button>
+      <div style="font-size:17px;font-weight:800;color:var(--ink)">Nouveau livre</div>
+    </div>
+
+    ${['title','author','pages'].map(k=>`
+    <div style="margin-bottom:16px">
+      <div class="section-title">${k==='title'?'Titre du livre':k==='author'?'Auteur':'Nombre de pages'}</div>
+      <input type="${k==='pages'?'number':'text'}" value="${esc(f[k])}"
+        oninput="setField('${k}',this.value)"
+        placeholder="${k==='title'?'Ex: Influence':k==='author'?'Ex: Robert Cialdini':'Ex: 320'}" style="width:100%">
+    </div>`).join('')}
+
+    <div style="margin-bottom:20px">
+      <div class="section-title">Date de début</div>
+      <input type="date" value="${f.startDate}" oninput="setField('startDate',this.value)" style="width:100%">
+    </div>
+
+    <div style="margin-bottom:28px">
+      <div class="section-title">Méthode d'assimilation</div>
+      ${Object.entries(METHODS).map(([k,m])=>`
+      <div class="method-card ${f.method===k?'selected':''}" onclick="setMethod('${k}')">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+          <span style="font-size:13px;font-weight:700;color:${f.method===k?'var(--blue)':'var(--ink)'}">${m.label}</span>
+          <span style="font-size:11px;color:var(--inkMid)">${m.ppd} pages/jour</span>
+        </div>
+        <div style="font-size:12px;color:var(--inkMid);line-height:1.5">${m.desc}</div>
+      </div>`).join('')}
+    </div>
+
+    ${preview}
+
+    <button onclick="submitPlan()" ${!f.title||!f.pages?'disabled':''}
+      style="width:100%;padding:15px;background:${f.title&&f.pages?'var(--blue)':'var(--border)'};border:none;border-radius:12px;color:${f.title&&f.pages?'#fff':'var(--inkDim)'};font-weight:700;font-size:15px;cursor:${f.title&&f.pages?'pointer':'not-allowed'};transition:all .2s;font-family:inherit">
+      Créer le plan de lecture
+    </button>
+
+    <div style="margin-top:28px">
+      <div class="section-title">Ajouter depuis la bibliothèque</div>
+      ${allBooks.slice(0,8).map((b,i)=>{
+        const d = DOMAINS.find(d=>d.id===b.did);
+        return `<div onclick="selectBookFromLib(${i})"
+          style="display:flex;align-items:center;gap:12px;padding:11px 14px;background:var(--card);border:1px solid var(--border);border-radius:10px;margin-bottom:8px;cursor:pointer">
+          <span style="font-size:14px;color:${d?.color}">${d?.icon}</span>
+          <div style="flex:1">
+            <div style="font-size:12px;color:var(--ink);font-weight:600">${esc(b.title)}</div>
+            <div style="font-size:10px;color:var(--inkMid)">${esc(b.author)}</div>
+          </div>
+          <span style="font-size:11px;color:var(--blue)">↗</span>
+        </div>`;
+      }).join('')}
+    </div>
+  </div>`;
+}
+
+function renderPlanDetail() {
+  const plan = state.plans.find(p=>p.id===state.selectedPlan?.id)||state.selectedPlan;
+  if(!plan) return renderPlanList();
+  const pr = getPagesRead(plan);
+  const pct = Math.min(100,Math.round(pr/plan.totalPages*100));
+  const dl = getDaysLeft(plan);
+  const streak = getStreak(plan);
+  const t = today();
+  const todaySlot = plan.schedule.find(s=>s.date===t);
+  const done = plan.status==='done';
+  const m = METHODS[plan.method];
+
+  return `
+  <div style="padding:20px 20px 100px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+      <div style="display:flex;align-items:center;gap:10px">
+        <button class="back-btn" onclick="showList()">←</button>
+        <div>
+          <div style="font-size:15px;font-weight:800;color:var(--ink)">${esc(plan.title)}</div>
+          <div style="font-size:11px;color:var(--inkMid)">${esc(plan.author)}</div>
+        </div>
+      </div>
+      <button onclick="openCalendar()" style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:7px 12px;color:var(--inkMid);font-size:11px;cursor:pointer;font-weight:600;font-family:inherit">📅 Calendrier</button>
+    </div>
+
+    <div class="kpi-grid">
+      ${[
+        {l:'Avancement',v:`${pct}%`,c:C.blue},
+        {l:'Pages lues',v:pr,c:C.ink},
+        {l:done?'Terminé !':`J-${Math.max(0,dl)}`,v:done?'✓':fmtDate(plan.endDate),c:done?C.green:C.gold},
+        {l:'Streak',v:`${streak}j 🔥`,c:'#E87A4A'},
+      ].map(k=>`
+      <div class="kpi-box">
+        <div class="kpi-val" style="color:${k.c}">${k.v}</div>
+        <div class="kpi-label">${k.l}</div>
+      </div>`).join('')}
+    </div>
+
+    <div class="progress-bar-wrap" style="height:8px;border-radius:4px;margin-bottom:8px">
+      <div class="progress-bar" style="width:${pct}%;background:${done?C.green:C.blue};border-radius:4px"></div>
+    </div>
+    <div style="font-size:11px;color:var(--inkMid);margin-bottom:20px">${plan.totalPages-pr} pages restantes · ${m.label}</div>
+
+    ${!done && todaySlot ? `
+    <div class="today-target-box" style="background:${todaySlot.type==='review'?C.gold+'14':C.blue+'14'};border:1px solid ${todaySlot.type==='review'?C.gold+'44':C.blue+'44'}">
+      <div style="font-size:11px;color:var(--inkMid);letter-spacing:.1em;text-transform:uppercase;font-weight:600;margin-bottom:6px">Objectif d'aujourd'hui</div>
+      <div style="font-size:18px;font-weight:800;color:${todaySlot.type==='review'?C.gold:C.blue}">
+        ${todaySlot.type==='review'?'🔄 Séance de révision':'📖 '+todaySlot.pages+' pages à lire'}
+      </div>
+      <div style="font-size:12px;color:var(--inkMid);margin-top:6px">
+        ${todaySlot.type==='review'?'Reprends tes notes. Reformule les idées clés dans tes propres mots.':m.desc}
+      </div>
+    </div>` : ''}
+
+    ${!done ? `
+    ${renderTimer()}
+    <div class="log-section">
+      <div style="font-size:12px;color:var(--inkMid);letter-spacing:.1em;text-transform:uppercase;font-weight:600;margin-bottom:14px">Enregistrer une session</div>
+      <div style="display:flex;gap:8px;margin-bottom:10px">
+        <input type="number" value="${state.logPages}" oninput="state.logPages=this.value"
+          placeholder="Pages lues" style="flex:1">
+        <input type="date" value="${state.logDate}" oninput="state.logDate=this.value"
+          style="background:var(--surface);border:1px solid var(--borderHi);border-radius:10px;padding:12px;color:var(--ink);font-size:13px;outline:none">
+      </div>
+      <button onclick="logSession()" ${!state.logPages?'disabled':''}
+        style="width:100%;padding:12px;background:${state.logPages?'var(--blue)':'var(--border)'};border:none;border-radius:8px;color:${state.logPages?'#fff':'var(--inkDim)'};font-weight:700;font-size:13px;cursor:${state.logPages?'pointer':'not-allowed'};font-family:inherit">
+        ✓ Valider la session
+      </button>
+    </div>` : ''}
+
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px 18px;margin-bottom:20px">
+      <div style="font-size:11px;color:var(--inkMid);letter-spacing:.1em;text-transform:uppercase;font-weight:600;margin-bottom:10px">Méthode : ${m.label}</div>
+      <div style="font-size:13px;color:var(--inkMid);line-height:1.65">${m.desc}</div>
+      <div style="margin-top:12px;display:flex;gap:16px">
+        <div style="font-size:12px;color:var(--ink)">📖 <strong>${m.ppd}</strong> pages/jour</div>
+        ${m.reviewEvery>0?`<div style="font-size:12px;color:var(--gold)">🔄 Révision tous les ${m.reviewEvery} jours</div>`:''}
+      </div>
+    </div>
+
+    ${plan.log.length>0 ? `
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px 18px;margin-bottom:20px">
+      <div style="font-size:11px;color:var(--inkMid);letter-spacing:.1em;text-transform:uppercase;font-weight:600;margin-bottom:12px">Historique des sessions</div>
+      ${[...plan.log].reverse().slice(0,7).map((l,i,arr)=>`
+      <div style="display:flex;justify-content:space-between;padding:7px 0;${i<arr.length-1?'border-bottom:1px solid var(--border)':''}">
+        <span style="font-size:12px;color:var(--inkMid)">${fmtDate(l.date)}</span>
+        <span style="font-size:12px;color:var(--ink);font-weight:600">+${l.pages} pages</span>
+      </div>`).join('')}
+    </div>` : ''}
+
+    <button onclick="deletePlan(${plan.id})" style="width:100%;padding:12px;background:none;border:1px solid ${C.red}44;border-radius:10px;color:var(--red);font-size:12px;cursor:pointer;opacity:.7;font-family:inherit">
+      Supprimer ce plan
+    </button>
+  </div>`;
+}
+
+function renderCalendar() {
+  const plan = state.plans.find(p=>p.id===state.selectedPlan?.id)||state.selectedPlan;
+  if(!plan) return renderPlanList();
+  const logDates = new Set(plan.log.map(l=>l.date));
+  const t = today();
+  const startDay = new Date(plan.startDate+'T12:00:00').getDay();
+  const offset = startDay===0?6:startDay-1;
+
+  return `
+  <div style="padding:20px 20px 100px">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px">
+      <button class="back-btn" onclick="backToDetail()">←</button>
+      <div>
+        <div style="font-size:15px;font-weight:800;color:var(--ink)">Calendrier — ${esc(plan.title)}</div>
+        <div style="font-size:11px;color:var(--inkMid)">${fmtDate(plan.startDate)} → ${fmtDate(plan.endDate)}</div>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:16px;margin-bottom:16px;flex-wrap:wrap">
+      ${[{c:C.blue,l:'Lecture'},{c:C.gold,l:'Révision'},{c:C.green,l:'Fait'},{c:C.inkDim,l:'À venir'}].map(x=>`
+      <div style="display:flex;align-items:center;gap:5px">
+        <div style="width:10px;height:10px;border-radius:3px;background:${x.c}"></div>
+        <span style="font-size:10px;color:var(--inkMid)">${x.l}</span>
+      </div>`).join('')}
+    </div>
+
+    <div class="cal-grid">
+      ${['L','M','M','J','V','S','D'].map(d=>`<div class="cal-day-label">${d}</div>`).join('')}
+      ${Array.from({length:offset}).map(()=>'<div></div>').join('')}
+      ${plan.schedule.map(slot=>{
+        const isPast = slot.date < t;
+        const isToday = slot.date === t;
+        const isDone = logDates.has(slot.date) || (slot.type==='review' && isPast);
+        const bg = isDone ? C.green : isToday ? (slot.type==='review'?C.gold:C.blue) : slot.type==='review' ? C.gold+'44' : isPast ? C.red+'44' : C.border;
+        const day = new Date(slot.date+'T12:00:00').getDate();
+        const borderStyle = isToday ? `border:2px solid ${slot.type==='review'?C.gold:C.blue}` : '';
+        return `<div class="cal-cell" style="background:${bg};${borderStyle}" title="${fmtDate(slot.date)} — ${slot.type==='review'?'Révision':slot.pages+' pages'}">
+          <span style="font-size:10px;color:${isDone||isToday?'#fff':'var(--inkMid)'};font-weight:${isToday?800:400}">${day}</span>
+          ${slot.type==='review'?`<span style="font-size:7px;color:${isDone?'#fff':C.gold}">rev</span>`:''}
+        </div>`;
+      }).join('')}
+    </div>
+
+    <div style="margin-top:20px;font-size:12px;color:var(--inkMid);text-align:center">
+      ${plan.schedule.filter(s=>logDates.has(s.date)).length} / ${plan.schedule.filter(s=>s.type==='read').length} séances complétées
+    </div>
+  </div>`;
+}
+
+// ── INIT ──────────────────────────────────────────────────
+render();
+</script>
+
+
+</body></html>
