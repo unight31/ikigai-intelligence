@@ -187,6 +187,21 @@
   .timer-display { font-size: 38px; font-weight: 800; letter-spacing: .08em; text-align: center; font-variant-numeric: tabular-nums; color: var(--ink); margin: 12px 0; }
   .timer-btns { display: flex; gap: 8px; }
   .timer-btn { flex: 1; padding: 10px; border-radius: 8px; border: none; font-size: 13px; font-weight: 700; cursor: pointer; font-family: inherit; transition: opacity .2s; }
+
+  /* MUSCU */
+  .muscu-day-card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 16px 18px; margin-bottom: 10px; cursor: pointer; transition: border-color .2s; }
+  .muscu-day-card.rest { cursor: default; opacity: .55; }
+  .muscu-day-card.is-today { border-color: var(--borderHi); }
+  .muscu-day-top { display: flex; justify-content: space-between; align-items: flex-start; }
+  .muscu-day-label { font-size: 10px; color: var(--inkMid); text-transform: uppercase; letter-spacing: .1em; font-weight: 600; margin-bottom: 3px; }
+  .muscu-day-name { font-size: 15px; font-weight: 800; }
+  .muscu-day-sub { font-size: 12px; color: var(--inkMid); margin-top: 6px; }
+  .muscu-cardio-badge { display: inline-block; margin-top: 8px; font-size: 11px; color: var(--blue); background: var(--blueDim); padding: 4px 9px; border-radius: 6px; }
+  .exercise-row { display: flex; align-items: center; gap: 12px; padding: 12px 4px; border-bottom: 1px solid var(--border); cursor: pointer; }
+  .exercise-row:last-child { border-bottom: none; }
+  .exercise-check { width: 22px; height: 22px; border-radius: 50%; border: 2px solid var(--borderHi); flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 12px; color: #fff; font-weight: 800; transition: all .2s; }
+  .exercise-name { font-size: 13px; font-weight: 600; color: var(--ink); }
+  .exercise-detail { font-size: 11px; color: var(--inkMid); margin-top: 2px; }
 </style>
 </head>
 <body>
@@ -253,6 +268,10 @@
     <button class="nav-btn active" id="nav-learn" onclick="navigate(&#39;learn&#39;)">
       <span class="nav-icon">◈</span>
       <span class="nav-label">Apprendre</span>
+    </button>
+    <button class="nav-btn" id="nav-muscu" onclick="navigate('muscu')">
+      <span class="nav-icon">◆</span>
+      <span class="nav-label">Muscu</span>
     </button>
     <button class="nav-btn" id="nav-reading" onclick="navigate(&#39;reading&#39;)">
       <span class="nav-icon">◎</span>
@@ -392,9 +411,75 @@ const METHODS = {
   sprint:  { label:'Lecture rapide', desc:'Tu lis vite pour identifier les 20% d\'idées qui valent 80% du livre.', ppd:35, reviewEvery:0 },
 };
 
+// ── MUSCU DATA ────────────────────────────────────────────
+const MUSCU_DAYS = [
+  { id:'lundi', label:'Lundi', name:'Push A', sub:'Pecs / Épaules / Triceps', color:'#4A7CDB', icon:'◈', rest:false,
+    warmup:'5 min — rotations épaules, pompes lentes x10',
+    exercises:[
+      {name:'Pompes classiques (tempo 3s descente)', detail:'4 x 12-15 · repos 60s'},
+      {name:'Développé kettlebell épaules (1 bras)', detail:'4 x 10/bras · repos 60s'},
+      {name:'Pompes pieds surélevés', detail:'3 x 10-12 · repos 60s'},
+      {name:'Kettlebell floor press', detail:'3 x 12 · repos 45s'},
+      {name:'Dips entre 2 chaises', detail:'3 x max · repos 60s'},
+      {name:'Pompes diamant (triceps)', detail:'3 x max · repos 45s'},
+      {name:'Gainage planche', detail:'3 x 45s · repos 30s'},
+    ], cardio:null },
+  { id:'mardi', label:'Mardi', name:'Pull A', sub:'Dos / Biceps', color:'#4AC87A', icon:'◎', rest:false,
+    warmup:'5 min — suspension passive à la barre 2x20s',
+    exercises:[
+      {name:'Tractions pronation (ou négatives)', detail:'5 x max (viser 6-10) · repos 90s'},
+      {name:'Rowing kettlebell 1 bras', detail:'4 x 12/bras · repos 60s'},
+      {name:'Tractions supination (chin-ups)', detail:'3 x max · repos 90s'},
+      {name:'Swing kettlebell', detail:'4 x 15 · repos 45s'},
+      {name:'Curl kettlebell biceps', detail:'3 x 12 · repos 45s'},
+      {name:'Superman (lombaires)', detail:'3 x 15 · repos 30s'},
+    ], cardio:{type:'Natation', duration:'15-20 min', note:'Allure modérée, pas de sprint'} },
+  { id:'mercredi', label:'Mercredi', name:'Legs A', sub:'Jambes / Fessiers', color:'#C8A84A', icon:'△', rest:false,
+    warmup:'5 min — squats à vide, fentes marchées',
+    exercises:[
+      {name:'Goblet squat kettlebell', detail:'4 x 15 · repos 60s'},
+      {name:'Fentes bulgares (pied arrière surélevé)', detail:'3 x 12/jambe · repos 60s'},
+      {name:'Kettlebell swing', detail:'4 x 15 · repos 45s'},
+      {name:'Hip thrust unilatéral', detail:'3 x 15/jambe · repos 45s'},
+      {name:'Mollets debout (unilatéral)', detail:'4 x 20/jambe · repos 30s'},
+      {name:'Gainage latéral', detail:'3 x 30s/côté · repos 30s'},
+    ], cardio:null },
+  { id:'jeudi', label:'Jeudi', name:'Push B', sub:'Pecs / Épaules / Triceps', color:'#4A7CDB', icon:'◈', rest:false,
+    warmup:'5 min — rotations épaules, pompes lentes x10',
+    exercises:[
+      {name:'Pompes archer', detail:'4 x 8/bras · repos 60s'},
+      {name:'Kettlebell push press', detail:'4 x 10 · repos 60s'},
+      {name:'Pompes tempo 4-1-1', detail:'3 x 10 · repos 60s'},
+      {name:'Kettlebell arnold press', detail:'3 x 12 · repos 45s'},
+      {name:'Dips lents (tempo 3s)', detail:'3 x max · repos 60s'},
+      {name:'Extension triceps kettlebell', detail:'3 x 12 · repos 45s'},
+    ], cardio:{type:'Vélo ou course', duration:'15 min', note:'Allure facile, récupération active'} },
+  { id:'vendredi', label:'Vendredi', name:'Pull B', sub:'Dos / Biceps', color:'#4AC87A', icon:'◎', rest:false,
+    warmup:'5 min — suspension passive à la barre 2x20s',
+    exercises:[
+      {name:'Tractions prise large', detail:'4 x max · repos 90s'},
+      {name:'Kettlebell row bras tendu (renegade row)', detail:'3 x 10/bras · repos 60s'},
+      {name:'Tractions prise serrée', detail:'3 x max · repos 90s'},
+      {name:'Kettlebell high pull', detail:'4 x 12 · repos 45s'},
+      {name:'Leg raises à la barre', detail:'3 x 10-12 · repos 45s'},
+      {name:'Curl kettlebell + rotation', detail:'3 x 12 · repos 45s'},
+    ], cardio:null },
+  { id:'samedi', label:'Samedi', name:'Legs B', sub:'Jambes / Fessiers', color:'#C8A84A', icon:'△', rest:false,
+    warmup:'5 min — squats à vide, fentes marchées',
+    exercises:[
+      {name:'Kettlebell front squat', detail:'4 x 12 · repos 60s'},
+      {name:'Fentes marchées kettlebell', detail:'3 x 12/jambe · repos 60s'},
+      {name:'Pistol squat assisté', detail:'3 x 6-8/jambe · repos 60s'},
+      {name:'Kettlebell deadlift (jambes tendues)', detail:'4 x 12 · repos 60s'},
+      {name:'Gainage complet (planche + rotation)', detail:'3 x 45s · repos 30s'},
+    ], cardio:{type:'Natation ou vélo', duration:'25-30 min', note:'Allure modérée constante'} },
+  { id:'dimanche', label:'Dimanche', name:'Repos', sub:'Récupération complète — sommeil et alimentation', color:'#7B7F96', icon:'○', rest:true,
+    warmup:'', exercises:[], cardio:null },
+];
+
 // ── STATE ─────────────────────────────────────────────────
 let state = {
-  screen: 'learn',      // learn | reading
+  screen: 'learn',      // learn | reading | muscu
   domain: null,
   tab: 'concept',       // concept | books | defi
   conceptIdx: {},       // { domainId: index }
@@ -406,6 +491,8 @@ let state = {
   logPages: '',
   logDate: today(),
   timer: { running: false, seconds: 0, intervalId: null },
+  muscu: { selectedDay: null, checked: {} },
+  workoutLog: [],        // { date, dayId, checked }
 };
 
 function loadStorage() {
@@ -414,10 +501,11 @@ function loadStorage() {
     if (s.plans) state.plans = s.plans;
     if (s.conceptIdx) state.conceptIdx = s.conceptIdx;
     if (s.defiIdx) state.defiIdx = s.defiIdx;
+    if (s.workoutLog) state.workoutLog = s.workoutLog;
   } catch {}
 }
 function saveStorage() {
-  localStorage.setItem('ikigai_v3', JSON.stringify({ plans: state.plans, conceptIdx: state.conceptIdx, defiIdx: state.defiIdx }));
+  localStorage.setItem('ikigai_v3', JSON.stringify({ plans: state.plans, conceptIdx: state.conceptIdx, defiIdx: state.defiIdx, workoutLog: state.workoutLog }));
 }
 loadStorage();
 
@@ -479,7 +567,8 @@ function navigate(screen) {
   state.screen = screen;
   if(screen === 'learn') { state.domain = null; state.tab = 'concept'; }
   if(screen === 'reading') { state.plannerView = 'list'; }
-  // Stop timer when leaving detail view
+  if(screen === 'muscu') { state.muscu.selectedDay = null; }
+  // Stop timer when leaving detail/session view
   if(screen !== 'reading' || state.plannerView !== 'detail') {
     timerPause();
     state.timer.seconds = 0;
@@ -559,6 +648,59 @@ function logSession() {
 function openCalendar() { state.plannerView='calendar'; render(); }
 function backToDetail() { state.plannerView='detail'; render(); }
 
+// ── MUSCU ACTIONS ─────────────────────────────────────────
+function getTodayDayId() {
+  const map = ['dimanche','lundi','mardi','mercredi','jeudi','vendredi','samedi'];
+  return map[new Date().getDay()];
+}
+function openWorkoutDay(dayId) {
+  const d = MUSCU_DAYS.find(x=>x.id===dayId);
+  if(!d || d.rest) return;
+  state.muscu.selectedDay = dayId;
+  const existing = state.workoutLog.find(l=>l.date===today() && l.dayId===dayId);
+  state.muscu.checked = existing ? {...existing.checked} : {};
+  timerPause(); state.timer.seconds = 0; state.timer.running = false;
+  render();
+}
+function backToMuscuWeek() {
+  state.muscu.selectedDay = null;
+  timerPause(); state.timer.seconds = 0; state.timer.running = false;
+  render();
+}
+function toggleExercise(i) {
+  state.muscu.checked[i] = !state.muscu.checked[i];
+  render();
+}
+function finishSession() {
+  const dayId = state.muscu.selectedDay;
+  if(!dayId) return;
+  const t = today();
+  state.workoutLog = state.workoutLog.filter(l => !(l.date===t && l.dayId===dayId));
+  state.workoutLog.push({ date:t, dayId, checked:{...state.muscu.checked} });
+  saveStorage();
+  backToMuscuWeek();
+}
+function getMuscuStreak() {
+  let streak = 0;
+  const d = new Date();
+  const dates = new Set(state.workoutLog.map(l=>l.date));
+  while(true) {
+    const ds = d.toISOString().slice(0,10);
+    if(dates.has(ds)) { streak++; }
+    else if(d.getDay() !== 0) { break; } // dimanche = repos prévu, ne casse pas le streak
+    d.setDate(d.getDate()-1);
+  }
+  return streak;
+}
+function getWeekSessionsCount() {
+  const now = new Date();
+  const diffToMonday = now.getDay()===0 ? 6 : now.getDay()-1;
+  const monday = new Date(now);
+  monday.setDate(now.getDate()-diffToMonday);
+  const mondayStr = monday.toISOString().slice(0,10);
+  return state.workoutLog.filter(l => l.date >= mondayStr).length;
+}
+
 // ── TIMER ─────────────────────────────────────────────────
 function fmtTimer(s) {
   const h = Math.floor(s/3600);
@@ -616,6 +758,8 @@ function render() {
   const main = document.getElementById('main');
   if(state.screen==='learn') {
     main.innerHTML = state.domain ? renderDomain() : renderHome();
+  } else if(state.screen==='muscu') {
+    main.innerHTML = state.muscu.selectedDay ? renderWorkoutSession() : renderMuscuWeek();
   } else {
     main.innerHTML = renderPlanner();
   }
@@ -705,6 +849,128 @@ function renderDomain() {
     </div>
   </div>
   <div class="tab-content">${content}</div>`;
+}
+
+// ── MUSCU ────────────────────────────────────────────────
+function renderMuscuWeek() {
+  const t = today();
+  const streak = getMuscuStreak();
+  const weekCount = getWeekSessionsCount();
+  const todayId = getTodayDayId();
+  const doneToday = new Set(state.workoutLog.filter(l=>l.date===t).map(l=>l.dayId));
+
+  const cards = MUSCU_DAYS.map(d=>{
+    const isToday = d.id===todayId;
+    if(d.rest) {
+      return `
+      <div class="muscu-day-card rest ${isToday?'is-today':''}">
+        <div class="muscu-day-top">
+          <div>
+            <div class="muscu-day-label">${d.label}${isToday?' · Aujourd’hui':''}</div>
+            <div class="muscu-day-name" style="color:${d.color}">${esc(d.name)}</div>
+          </div>
+          <span style="font-size:20px;color:${d.color}">${d.icon}</span>
+        </div>
+        <div class="muscu-day-sub">${esc(d.sub)}</div>
+      </div>`;
+    }
+    const done = doneToday.has(d.id);
+    return `
+    <div class="muscu-day-card ${isToday?'is-today':''}" onclick="openWorkoutDay('${d.id}')">
+      <div class="muscu-day-top">
+        <div>
+          <div class="muscu-day-label">${d.label}${isToday?' · Aujourd’hui':''}</div>
+          <div class="muscu-day-name" style="color:${d.color}">${esc(d.name)}</div>
+        </div>
+        ${done?`<span style="font-size:18px;color:var(--green)">✓</span>`:`<span style="font-size:20px;color:${d.color}">${d.icon}</span>`}
+      </div>
+      <div class="muscu-day-sub">${esc(d.sub)} · ${d.exercises.length} exercices</div>
+      ${d.cardio?`<div class="muscu-cardio-badge">🏊 ${esc(d.cardio.type)} · ${esc(d.cardio.duration)}</div>`:''}
+    </div>`;
+  }).join('');
+
+  return `
+  <div style="padding:20px 20px 100px">
+    <div class="hero" style="padding:0 0 24px;text-align:left;border-bottom:none">
+      <div class="hero-eyebrow">Prise de masse</div>
+      <div class="hero-title" style="font-size:24px">Programme muscu.<br><span>6x / semaine.</span></div>
+      <div class="hero-sub">Push / Pull / Legs x2 — kettlebell &amp; barre de traction, 30-40 min/jour.</div>
+    </div>
+    <div class="kpi-grid" style="grid-template-columns:repeat(3,1fr)">
+      <div class="kpi-box"><div class="kpi-val" style="color:#E8734A">${streak}j 🔥</div><div class="kpi-label">Streak</div></div>
+      <div class="kpi-box"><div class="kpi-val" style="color:var(--blue)">${weekCount}/6</div><div class="kpi-label">Cette semaine</div></div>
+      <div class="kpi-box"><div class="kpi-val" style="color:var(--ink)">${state.workoutLog.length}</div><div class="kpi-label">Total séances</div></div>
+    </div>
+    ${cards}
+  </div>`;
+}
+
+function renderWorkoutSession() {
+  const d = MUSCU_DAYS.find(x=>x.id===state.muscu.selectedDay);
+  if(!d) return renderMuscuWeek();
+  const checkedCount = d.exercises.filter((_,i)=>state.muscu.checked[i]).length;
+  const pct = d.exercises.length ? Math.round(checkedCount/d.exercises.length*100) : 0;
+  const allDone = d.exercises.length>0 && checkedCount===d.exercises.length;
+  const history = state.workoutLog.filter(l=>l.dayId===d.id).sort((a,b)=>b.date.localeCompare(a.date)).slice(0,3);
+
+  return `
+  <div style="padding:20px 20px 100px">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px">
+      <button class="back-btn" onclick="backToMuscuWeek()">←</button>
+      <div>
+        <div style="font-size:17px;font-weight:800;color:var(--ink)">${d.label} — ${esc(d.name)}</div>
+        <div style="font-size:11px;color:var(--inkMid)">${esc(d.sub)}</div>
+      </div>
+    </div>
+
+    <div style="background:${d.color}12;border:1px solid ${d.color}33;border-radius:12px;padding:14px 16px;margin-bottom:20px">
+      <div style="font-size:11px;color:var(--inkMid);text-transform:uppercase;letter-spacing:.1em;font-weight:600;margin-bottom:4px">Échauffement</div>
+      <div style="font-size:13px;color:var(--ink)">${esc(d.warmup)}</div>
+    </div>
+
+    <div class="progress-bar-wrap" style="height:8px;border-radius:4px;margin-bottom:6px">
+      <div class="progress-bar" style="width:${pct}%;background:${d.color};border-radius:4px"></div>
+    </div>
+    <div style="font-size:11px;color:var(--inkMid);margin-bottom:18px">${checkedCount} / ${d.exercises.length} exercices faits</div>
+
+    <div style="margin-bottom:20px">
+      ${d.exercises.map((ex,i)=>{
+        const on = !!state.muscu.checked[i];
+        return `
+        <div class="exercise-row" onclick="toggleExercise(${i})">
+          <div class="exercise-check" style="${on?`background:${d.color};border-color:${d.color}`:''}">${on?'✓':''}</div>
+          <div style="flex:1">
+            <div class="exercise-name" style="${on?'text-decoration:line-through;color:var(--inkDim)':''}">${esc(ex.name)}</div>
+            <div class="exercise-detail">${esc(ex.detail)}</div>
+          </div>
+        </div>`;
+      }).join('')}
+    </div>
+
+    ${d.cardio ? `
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px 18px;margin-bottom:20px">
+      <div style="font-size:11px;color:var(--inkMid);text-transform:uppercase;letter-spacing:.1em;font-weight:600;margin-bottom:8px">🏊 Cardio</div>
+      <div style="font-size:14px;color:var(--ink);font-weight:700">${esc(d.cardio.type)} · ${esc(d.cardio.duration)}</div>
+      <div style="font-size:12px;color:var(--inkMid);margin-top:4px">${esc(d.cardio.note)}</div>
+    </div>` : ''}
+
+    ${renderTimer()}
+
+    <button onclick="finishSession()"
+      style="width:100%;padding:15px;background:${allDone?'var(--green)':d.color};border:none;border-radius:12px;color:#fff;font-weight:700;font-size:15px;cursor:pointer;font-family:inherit;margin-bottom:20px">
+      ${allDone?'✓ Séance terminée — Valider':'Terminer la séance'}
+    </button>
+
+    ${history.length>0?`
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px 18px">
+      <div style="font-size:11px;color:var(--inkMid);text-transform:uppercase;letter-spacing:.1em;font-weight:600;margin-bottom:12px">Historique — ${esc(d.name)}</div>
+      ${history.map((l,i,arr)=>`
+      <div style="display:flex;justify-content:space-between;padding:7px 0;${i<arr.length-1?'border-bottom:1px solid var(--border)':''}">
+        <span style="font-size:12px;color:var(--inkMid)">${fmtDate(l.date)}</span>
+        <span style="font-size:12px;color:var(--green);font-weight:600">✓ Complétée</span>
+      </div>`).join('')}
+    </div>`:''}
+  </div>`;
 }
 
 // ── PLANNER ───────────────────────────────────────────────
