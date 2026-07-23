@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="fr"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Ikigai — Élastiques</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg:       #0B0C10;
+    --surface:  #111318;
+    --card:     #161820;
+    --border:   #1F2230;
+    --borderHi: #2E3248;
+    --ink:      #E8E6F0;
+    --inkMid:   #7B7F96;
+    --inkDim:   #3A3D50;
+    --blue:     #4A7CDB;
+    --blueDim:  #253660;
+    --gold:     #C8A84A;
+    --goldDim:  #5C4C22;
+    --red:      #C84A4A;
+    --green:    #4AC87A;
+    --orange:   #E8734A;
+  }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: -apple-system, 'SF Pro Display', 'Segoe UI', system-ui, sans-serif;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+  }
+  #app { width: 100%; max-width: 480px; min-height: 100vh; display: flex; flex-direction: column; }
+  #topbar {
+    display: flex; align-items: center; gap: 12px;
+    padding: 18px 22px 14px; border-bottom: 1px solid var(--border);
+    position: sticky; top: 0; background: var(--bg); z-index: 10;
+  }
+  #topbar a { color: var(--inkMid); text-decoration: none; font-size: 18px; line-height: 1; }
+  .logo-main { font-size: 15px; font-weight: 800; letter-spacing: .08em; color: var(--orange); }
+  .logo-sub  { font-size: 15px; font-weight: 200; letter-spacing: .12em; color: var(--inkDim); margin-left: 6px; }
+  #main { flex: 1; padding: 20px 20px 60px; }
+
+  .hero { padding: 4px 0 22px; }
+  .hero-eyebrow { font-size: 11px; letter-spacing: .3em; color: var(--inkDim); text-transform: uppercase; margin-bottom: 14px; font-weight: 600; }
+  .hero-title { font-size: 22px; font-weight: 800; letter-spacing: -.01em; line-height: 1.25; }
+  .hero-title span { color: var(--orange); }
+  .hero-sub { font-size: 13px; color: var(--inkMid); line-height: 1.6; margin-top: 12px; }
+
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 18px; margin-bottom: 14px; }
+  .section-title { font-size: 11px; letter-spacing: .14em; text-transform: uppercase; font-weight: 700; color: var(--inkMid); margin-bottom: 12px; }
+
+  .kpi-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 14px; }
+  .kpi-box { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 12px 6px; text-align: center; }
+  .kpi-val { font-size: 16px; font-weight: 800; margin-bottom: 4px; }
+  .kpi-label { font-size: 9px; color: var(--inkMid); }
+
+  .progress-bar-wrap { height: 8px; background: var(--border); border-radius: 4px; overflow: hidden; margin: 10px 0; }
+  .progress-bar { height: 100%; border-radius: 4px; transition: width .6s; }
+
+  input[type=text], input[type=number], input[type=date] {
+    background: var(--surface); border: 1px solid var(--borderHi); border-radius: 10px;
+    padding: 12px 14px; color: var(--ink); font-size: 14px; outline: none; width: 100%; font-family: inherit;
+  }
+  .btn-primary {
+    width: 100%; padding: 13px; background: var(--orange); border: none; border-radius: 10px;
+    color: #fff; font-weight: 700; font-size: 13px; cursor: pointer; font-family: inherit;
+  }
+  .btn-primary:disabled { opacity: .35; cursor: not-allowed; }
+
+  .phase-tabs { display: flex; gap: 6px; overflow-x: auto; margin-bottom: 14px; }
+  .phase-tab {
+    flex: 1; min-width: 78px; background: var(--card); border: 1px solid var(--border); border-radius: 10px;
+    padding: 10px 6px; text-align: center; cursor: pointer; font-family: inherit;
+  }
+  .phase-tab.active { border-color: var(--orange); background: rgba(232,115,74,.1); }
+  .phase-tab .pt-num { font-size: 10px; color: var(--inkMid); text-transform: uppercase; letter-spacing: .08em; font-weight: 700; }
+  .phase-tab.active .pt-num { color: var(--orange); }
+  .phase-tab .pt-weeks { font-size: 9px; color: var(--inkDim); margin-top: 2px; }
+
+  .back-btn { background: none; border: none; cursor: pointer; color: var(--inkMid); font-size: 18px; padding: 0; line-height: 1; }
+
+  .muscu-day-card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 16px 18px; margin-bottom: 10px; cursor: pointer; }
+  .muscu-day-card.rest { cursor: default; opacity: .55; }
+  .muscu-day-card.is-today { border-color: var(--borderHi); }
+  .muscu-day-top { display: flex; justify-content: space-between; align-items: flex-start; }
+  .muscu-day-label { font-size: 10px; color: var(--inkMid); text-transform: uppercase; letter-spacing: .1em; font-weight: 600; margin-bottom: 3px; }
+  .muscu-day-name { font-size: 15px; font-weight: 800; }
+  .muscu-day-sub { font-size: 12px; color: var(--inkMid); margin-top: 6px; }
+  .muscu-cardio-badge { display: inline-block; margin-top: 8px; font-size: 11px; color: var(--blue); background: var(--blueDim); padding: 4px 9px; border-radius: 6px; }
+
+  .exercise-row { padding: 12px 4px; border-bottom: 1px solid var(--border); }
+  .exercise-row:last-child { border-bottom: none; }
+  .exercise-row-top { display: flex; align-items: center; gap: 12px; cursor: pointer; }
+  .exercise-check { width: 22px; height: 22px; border-radius: 50%; border: 2px solid var(--borderHi); flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 12px; color: #fff; font-weight: 800; }
+  .exercise-name { font-size: 13px; font-weight: 600; color: var(--ink); }
+  .exercise-prescription { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; margin-left: 34px; }
+  .rx-pill { font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 5px; background: var(--surface); border: 1px solid var(--border); color: var(--inkMid); }
+  .cat-badge { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; padding: 2px 7px; border-radius: 4px; margin-left: 34px; display: inline-block; margin-top: 4px; }
+
+  .timer-box { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 18px; margin-bottom: 20px; }
+  .timer-display { font-size: 38px; font-weight: 800; letter-spacing: .08em; text-align: center; font-variant-numeric: tabular-nums; margin: 12px 0; }
+  .timer-btns { display: flex; gap: 8px; }
+  .timer-btn { flex: 1; padding: 10px; border-radius: 8px; border: none; font-size: 13px; font-weight: 700; cursor: pointer; font-family: inherit; }
+
+  .weight-row { display: flex; justify-content: space-between; padding: 7px 0; border-bottom: 1px solid var(--border); font-size: 12px; }
+  .weight-row:last-child { border-bottom: none; }
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="topbar">
+    <a href="index.html">←</a>
+    <div><span class="logo-main">ÉLASTIQUES</span><span class="logo-sub">PRISE DE MASSE</span></div>
+  </div>
+  <div id="main"></div>
+</div>
+
+<script>
+// ── DATA ──────────────────────────────────────────────────
+const START_WEIGHT = 80;
+const GOAL_WEIGHT = 88;
+const HEIGHT_CM = 187;
+
+const PHASES = [
+  { id:1, label:'Fondations', weeks:'Semaines 1-4', color:'#4A7CDB', days:[0,27],
+    goal:'Apprentissage technique, connexion muscle-tension, calibrage du niveau de bande.',
+    compound:{ band:'Niveau 1-2 (8-15 kg)', sets:3, reps:'12-15', tempo:'2-0-2', rest:60 },
+    isolation:{ band:'Niveau 1 (5-10 kg)', sets:3, reps:'15-20', tempo:'2-0-2', rest:45 },
+    core:{ sets:3, time:'30s', rest:30 } },
+  { id:2, label:'Hypertrophie', weeks:'Semaines 5-12', color:'#4AC87A', days:[28,83],
+    goal:'Bloc principal de croissance musculaire — volume élevé.',
+    compound:{ band:'Niveau 2 (12-20 kg)', sets:4, reps:'10-12', tempo:'3-1-1', rest:75 },
+    isolation:{ band:'Niveau 1-2 (10-15 kg)', sets:4, reps:'12-15', tempo:'3-0-1', rest:60 },
+    core:{ sets:4, time:'45s', rest:30 } },
+  { id:3, label:'Intensification', weeks:'Semaines 13-20', color:'#C8A84A', days:[84,139],
+    goal:'Recrutement maximal des fibres — charge lourde, tempo lent, bandes doublées si besoin.',
+    compound:{ band:'Niveau 3 (20-35 kg)', sets:4, reps:'6-8 + rest-pause 2x3', tempo:'4-1-1', rest:100 },
+    isolation:{ band:'Niveau 2 (15-20 kg)', sets:4, reps:'10-12', tempo:'3-1-1', rest:75 },
+    core:{ sets:4, time:'45s (+ lest optionnel)', rest:30 } },
+  { id:4, label:'Pic de forme', weeks:'Semaines 21-26', color:'#E8734A', days:[140,181],
+    goal:'Densification + finition métabolique — être au top pour la fin du programme.',
+    compound:{ band:'Niveau 3-4 (25-40 kg)', sets:5, reps:'5-6', tempo:'3-1-X (explosif)', rest:90 },
+    isolation:{ band:'Niveau 2-3 (18-25 kg)', sets:3, reps:'15-20 (finisher)', tempo:'2-0-1', rest:45 },
+    core:{ sets:4, time:'60s', rest:20 } },
+];
+
+const CARDIO = {
+  piscine: [
+    { duration:'20 min', detail:'Continu, allure facile — construire la base d’endurance.' },
+    { duration:'20-25 min', detail:'Continu, allure modérée constante.' },
+    { duration:'25 min', detail:'+ 6x50m rapide (récup 30s) — introduire de l’intensité.' },
+    { duration:'25-30 min', detail:'+ 8x50m fractionné rapide — affûtage.' },
+  ],
+  velo: [
+    { duration:'30 min', detail:'Endurance, allure facile, terrain roulant.' },
+    { duration:'35 min', detail:'Endurance, allure modérée constante.' },
+    { duration:'40 min', detail:'+ 4x3min soutenu (récup 3min) — un peu de relief.' },
+    { duration:'45 min', detail:'+ côtes/relances — conditionnement au top.' },
+  ],
+  course: [
+    { duration:'20 min', detail:'Endurance légère, allure facile.' },
+    { duration:'25 min', detail:'Endurance, allure modérée constante.' },
+    { duration:'25 min', detail:'+ 5x1min fractionné (récup 1min).' },
+    { duration:'30 min', detail:'+ 6x2min soutenu (récup 90s) — affûtage final.' },
+  ],
+};
+
+const DAYS = [
+  { id:'lundi', label:'Lundi', name:'Push A', sub:'Pecs / Épaules / Triceps', color:'#4A7CDB', icon:'◈', rest:false,
+    warmup:'5 min — rotations épaules, activation pecs avec bande légère x15',
+    exercises:[
+      { name:'Développé couché élastique (bande ancrée sous le dos)', cat:'compound' },
+      { name:'Développé militaire élastique debout (pieds sur la bande)', cat:'compound' },
+      { name:'Écarté couché élastique (ancrage bas)', cat:'isolation' },
+      { name:'Élévations latérales élastique', cat:'isolation' },
+      { name:'Pompes lestées (bande autour du dos, ancrée au sol)', cat:'compound' },
+      { name:'Extension triceps élastique (ancrage haut sur la barre)', cat:'isolation' },
+      { name:'Gainage planche', cat:'core' },
+    ], cardio:null },
+  { id:'mardi', label:'Mardi', name:'Pull A', sub:'Dos / Biceps', color:'#4AC87A', icon:'◎', rest:false,
+    warmup:'5 min — pull-apart légers x20, rotations d’épaules',
+    exercises:[
+      { name:'Tirage vertical élastique (ancré en haut sur la barre)', cat:'compound' },
+      { name:'Tirage horizontal élastique (rowing assis, ancrage bas)', cat:'compound' },
+      { name:'Rowing élastique 1 bras', cat:'compound' },
+      { name:'Face pull élastique (ancrage hauteur visage)', cat:'isolation' },
+      { name:'Curl biceps élastique', cat:'isolation' },
+      { name:'Extension lombaire (superman)', cat:'core' },
+    ], cardio:'piscine' },
+  { id:'mercredi', label:'Mercredi', name:'Legs A', sub:'Jambes / Fessiers', color:'#C8A84A', icon:'△', rest:false,
+    warmup:'5 min — squats à vide, mobilité hanches',
+    exercises:[
+      { name:'Squat élastique (bande sous les pieds, sur les épaules)', cat:'compound' },
+      { name:'Fentes élastique (bande sous le pied avant)', cat:'compound' },
+      { name:'Soulevé de terre jambes tendues élastique (RDL)', cat:'compound' },
+      { name:'Hip thrust élastique (bande sur les hanches, ancrée au sol)', cat:'compound' },
+      { name:'Extension mollets élastique', cat:'isolation' },
+      { name:'Gainage latéral', cat:'core' },
+    ], cardio:null },
+  { id:'jeudi', label:'Jeudi', name:'Push B', sub:'Pecs / Épaules / Triceps', color:'#4A7CDB', icon:'◈', rest:false,
+    warmup:'5 min — rotations épaules, activation pecs avec bande légère x15',
+    exercises:[
+      { name:'Développé couché prise serrée élastique (triceps)', cat:'compound' },
+      { name:'Développé Arnold élastique', cat:'compound' },
+      { name:'Écarté incliné élastique', cat:'isolation' },
+      { name:'Pompes déclinées lestées (pieds surélevés)', cat:'compound' },
+      { name:'Kickback triceps élastique', cat:'isolation' },
+      { name:'Gainage planche + rotation', cat:'core' },
+    ], cardio:'velo' },
+  { id:'vendredi', label:'Vendredi', name:'Pull B', sub:'Dos / Biceps', color:'#4AC87A', icon:'◎', rest:false,
+    warmup:'5 min — pull-apart légers x20, rotations d’épaules',
+    exercises:[
+      { name:'Tirage vertical prise serrée élastique', cat:'compound' },
+      { name:'Rowing élastique buste penché (deux bras)', cat:'compound' },
+      { name:'Tirage horizontal large élastique', cat:'compound' },
+      { name:'Pull-apart élastique (arrière d’épaule)', cat:'isolation' },
+      { name:'Curl marteau élastique', cat:'isolation' },
+      { name:'Extension lombaire (superman)', cat:'core' },
+    ], cardio:null },
+  { id:'samedi', label:'Samedi', name:'Legs B', sub:'Jambes / Fessiers', color:'#C8A84A', icon:'△', rest:false,
+    warmup:'5 min — squats à vide, mobilité hanches',
+    exercises:[
+      { name:'Squat sumo élastique', cat:'compound' },
+      { name:'Fentes marchées élastique', cat:'compound' },
+      { name:'Good morning élastique (bande sur la nuque)', cat:'compound' },
+      { name:'Hip thrust unilatéral élastique', cat:'compound' },
+      { name:'Élévation mollets unilatérale élastique', cat:'isolation' },
+      { name:'Gainage complet (planche + rotation)', cat:'core' },
+    ], cardio:'course' },
+  { id:'dimanche', label:'Dimanche', name:'Repos', sub:'Récupération complète — sommeil et alimentation', color:'#7B7F96', icon:'○', rest:true,
+    warmup:'', exercises:[], cardio:null },
+];
+
+// ── STATE ─────────────────────────────────────────────────
+let state = {
+  startDate: null,
+  weights: [],
+  weightInput: '',
+  phase: 1,
+  selectedDay: null,
+  checked: {},
+  workoutLog: [],
+  timer: { running:false, seconds:0, intervalId:null },
+};
+
+function loadStorage() {
+  try {
+    const s = JSON.parse(localStorage.getItem('ikigai_elastic_v1') || '{}');
+    if (s.startDate) state.startDate = s.startDate;
+    if (s.weights) state.weights = s.weights;
+    if (s.workoutLog) state.workoutLog = s.workoutLog;
+  } catch {}
+  if (!state.startDate) state.startDate = today();
+  if (state.weights.length === 0) state.weights = [{ date: state.startDate, kg: START_WEIGHT }];
+  saveStorage();
+}
+function saveStorage() {
+  localStorage.setItem('ikigai_elastic_v1', JSON.stringify({ startDate: state.startDate, weights: state.weights, workoutLog: state.workoutLog }));
+}
+
+// ── UTILS ─────────────────────────────────────────────────
+function today() { return new Date().toISOString().slice(0,10); }
+function addDays(ds, n) { const d = new Date(ds+'T12:00:00'); d.setDate(d.getDate()+n); return d.toISOString().slice(0,10); }
+function fmtDate(ds) { return new Date(ds+'T12:00:00').toLocaleDateString('fr-FR',{day:'numeric',month:'short'}); }
+function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function getWeekNum() {
+  const diff = Math.floor((new Date(today()+'T12:00:00') - new Date(state.startDate+'T12:00:00')) / 86400000);
+  return Math.max(1, Math.floor(diff/7)+1);
+}
+function getCurrentPhaseId() {
+  const w = getWeekNum();
+  if (w<=4) return 1;
+  if (w<=12) return 2;
+  if (w<=20) return 3;
+  return 4;
+}
+function getTodayDayId() {
+  const map = ['dimanche','lundi','mardi','mercredi','jeudi','vendredi','samedi'];
+  return map[new Date().getDay()];
+}
+function getStreak() {
+  let streak = 0, d = new Date();
+  const dates = new Set(state.workoutLog.map(l=>l.date));
+  while(true) {
+    const ds = d.toISOString().slice(0,10);
+    if (dates.has(ds)) streak++;
+    else if (d.getDay() !== 0) break;
+    d.setDate(d.getDate()-1);
+  }
+  return streak;
+}
+function getWeekSessionsCount() {
+  const now = new Date();
+  const diffToMonday = now.getDay()===0 ? 6 : now.getDay()-1;
+  const monday = new Date(now); monday.setDate(now.getDate()-diffToMonday);
+  const mondayStr = monday.toISOString().slice(0,10);
+  return state.workoutLog.filter(l => l.date >= mondayStr).length;
+}
+
+// ── ACTIONS ───────────────────────────────────────────────
+function setPhaseTab(id) { state.phase = id; render(); }
+function setStartDate(v) { state.startDate = v; saveStorage(); render(); }
+function setWeightInput(v) { state.weightInput = v; render(); }
+function logWeight() {
+  const kg = parseFloat(state.weightInput);
+  if (!kg || kg<=0) return;
+  state.weights = state.weights.filter(w=>w.date!==today());
+  state.weights.push({ date: today(), kg });
+  state.weights.sort((a,b)=>a.date.localeCompare(b.date));
+  state.weightInput = '';
+  saveStorage(); render();
+}
+function openDay(dayId) {
+  const d = DAYS.find(x=>x.id===dayId);
+  if (!d || d.rest) return;
+  state.selectedDay = dayId;
+  const existing = state.workoutLog.find(l=>l.date===today() && l.dayId===dayId);
+  state.checked = existing ? {...existing.checked} : {};
+  timerReset();
+  render();
+}
+function backToWeek() { state.selectedDay = null; timerReset(); render(); }
+function toggleExercise(i) { state.checked[i] = !state.checked[i]; render(); }
+function finishSession() {
+  const dayId = state.selectedDay;
+  if (!dayId) return;
+  const t = today();
+  state.workoutLog = state.workoutLog.filter(l => !(l.date===t && l.dayId===dayId));
+  state.workoutLog.push({ date:t, dayId, phase:state.phase, checked:{...state.checked} });
+  saveStorage();
+  backToWeek();
+}
+
+// ── TIMER ─────────────────────────────────────────────────
+function fmtTimer(s) {
+  const m = Math.floor(s/60), sec = s%60;
+  return String(m).padStart(2,'0')+':'+String(sec).padStart(2,'0');
+}
+function timerToggle() {
+  if (state.timer.running) {
+    state.timer.running = false; clearInterval(state.timer.intervalId);
+  } else {
+    state.timer.running = true;
+    state.timer.intervalId = setInterval(()=>{
+      state.timer.seconds++;
+      const el = document.getElementById('timer-display');
+      if (el) el.textContent = fmtTimer(state.timer.seconds);
+    }, 1000);
+  }
+  render();
+}
+function timerReset() {
+  clearInterval(state.timer.intervalId);
+  state.timer = { running:false, seconds:0, intervalId:null };
+}
+function renderTimer() {
+  const running = state.timer.running;
+  return `
+  <div class="timer-box">
+    <div style="font-size:11px;color:var(--inkMid);letter-spacing:.1em;text-transform:uppercase;font-weight:600">⏱ Minuteur de repos</div>
+    <div class="timer-display" id="timer-display">${fmtTimer(state.timer.seconds)}</div>
+    <div class="timer-btns">
+      <button class="timer-btn" style="background:${running?'var(--border)':'var(--orange)'};color:#fff" onclick="timerToggle()">${running?'⏸ Pause':'▶ Démarrer'}</button>
+      <button class="timer-btn" style="background:var(--border);color:var(--inkMid)" onclick="timerReset();render()">↺ Reset</button>
+    </div>
+  </div>`;
+}
+
+// ── RENDER ────────────────────────────────────────────────
+function render() {
+  const main = document.getElementById('main');
+  main.innerHTML = state.selectedDay ? renderSession() : renderWeek();
+}
+
+function renderWeightCard() {
+  const last = state.weights[state.weights.length-1];
+  const pct = Math.max(0, Math.min(100, Math.round((last.kg-START_WEIGHT)/(GOAL_WEIGHT-START_WEIGHT)*100)));
+  return `
+  <div class="card">
+    <div class="section-title">Objectif de poids</div>
+    <div class="kpi-grid">
+      <div class="kpi-box"><div class="kpi-val" style="color:var(--ink)">${last.kg}kg</div><div class="kpi-label">Actuel</div></div>
+      <div class="kpi-box"><div class="kpi-val" style="color:var(--orange)">${GOAL_WEIGHT}kg</div><div class="kpi-label">Objectif</div></div>
+      <div class="kpi-box"><div class="kpi-val" style="color:var(--green)">${Math.max(0,(GOAL_WEIGHT-last.kg)).toFixed(1)}kg</div><div class="kpi-label">Restant</div></div>
+    </div>
+    <div class="progress-bar-wrap"><div class="progress-bar" style="width:${pct}%;background:var(--orange)"></div></div>
+    <div style="display:flex;gap:8px;margin-top:12px">
+      <input type="number" step="0.1" value="${state.weightInput}" oninput="setWeightInput(this.value)" placeholder="Nouveau relevé (kg)" style="flex:1">
+      <button class="btn-primary" style="width:auto;padding:12px 16px" onclick="logWeight()" ${!state.weightInput?'disabled':''}>✓</button>
+    </div>
+    ${state.weights.length>1?`
+    <div style="margin-top:14px">
+      ${[...state.weights].reverse().slice(0,5).map((w,i,arr)=>`
+      <div class="weight-row" style="${i===arr.length-1?'border-bottom:none':''}">
+        <span style="color:var(--inkMid)">${fmtDate(w.date)}</span>
+        <span style="color:var(--ink);font-weight:600">${w.kg}kg</span>
+      </div>`).join('')}
+    </div>`:''}
+  </div>`;
+}
+
+function renderWeek() {
+  const weekNum = getWeekNum();
+  const curPhaseId = getCurrentPhaseId();
+  const phase = PHASES.find(p=>p.id===state.phase);
+  const todayId = getTodayDayId();
+  const doneToday = new Set(state.workoutLog.filter(l=>l.date===today()).map(l=>l.dayId));
+  const streak = getStreak();
+  const weekCount = getWeekSessionsCount();
+  const endDate = addDays(state.startDate, 181);
+
+  const dayCards = DAYS.map(d=>{
+    const isToday = d.id===todayId;
+    if (d.rest) {
+      return `
+      <div class="muscu-day-card rest ${isToday?'is-today':''}">
+        <div class="muscu-day-top">
+          <div><div class="muscu-day-label">${d.label}${isToday?' · Aujourd’hui':''}</div>
+          <div class="muscu-day-name" style="color:${d.color}">${esc(d.name)}</div></div>
+          <span style="font-size:20px;color:${d.color}">${d.icon}</span>
+        </div>
+        <div class="muscu-day-sub">${esc(d.sub)}</div>
+      </div>`;
+    }
+    const done = doneToday.has(d.id);
+    return `
+    <div class="muscu-day-card ${isToday?'is-today':''}" onclick="openDay('${d.id}')">
+      <div class="muscu-day-top">
+        <div><div class="muscu-day-label">${d.label}${isToday?' · Aujourd’hui':''}</div>
+        <div class="muscu-day-name" style="color:${d.color}">${esc(d.name)}</div></div>
+        ${done?`<span style="font-size:18px;color:var(--green)">✓</span>`:`<span style="font-size:20px;color:${d.color}">${d.icon}</span>`}
+      </div>
+      <div class="muscu-day-sub">${esc(d.sub)} · ${d.exercises.length} exercices</div>
+      ${d.cardio?`<div class="muscu-cardio-badge">🏊🚴🏃 ${d.cardio==='piscine'?'Natation':d.cardio==='velo'?'Vélo gravel':'Course à pied'} · ${CARDIO[d.cardio][state.phase-1].duration}</div>`:''}
+    </div>`;
+  }).join('');
+
+  return `
+  <div class="hero">
+    <div class="hero-eyebrow">Prise de masse rapide</div>
+    <div class="hero-title">80kg → <span>88kg</span> en 6 mois.</div>
+    <div class="hero-sub">1m87 · 6x/semaine · élastiques + barre de traction.<br>Semaine ${weekNum}/26 · Fin prévue le ${fmtDate(endDate)}</div>
+  </div>
+
+  <div class="card">
+    <div class="section-title">Repères clés</div>
+    <div style="font-size:12px;color:var(--inkMid);line-height:1.7">
+      Surplus calorique modéré (+300-400 kcal/j) · Protéines 1,8-2,2g/kg (~150-190g/j) · Sommeil 7-9h · Hydratation ~3L/j.<br>
+      +8kg en 26 semaines = ~0,3kg/semaine — rythme réaliste pour rester sec et "au top", pas du gros bulk.
+    </div>
+  </div>
+
+  ${renderWeightCard()}
+
+  <div class="card" style="padding:14px 18px">
+    <div class="section-title" style="margin-bottom:8px">Date de début du programme</div>
+    <input type="date" value="${state.startDate}" oninput="setStartDate(this.value)">
+  </div>
+
+  <div class="kpi-grid">
+    <div class="kpi-box"><div class="kpi-val" style="color:#E8734A">${streak}j 🔥</div><div class="kpi-label">Streak</div></div>
+    <div class="kpi-box"><div class="kpi-val" style="color:var(--blue)">${weekCount}/6</div><div class="kpi-label">Cette semaine</div></div>
+    <div class="kpi-box"><div class="kpi-val" style="color:var(--ink)">${state.workoutLog.length}</div><div class="kpi-label">Total séances</div></div>
+  </div>
+
+  <div class="section-title">Phase du programme</div>
+  <div class="phase-tabs">
+    ${PHASES.map(p=>`
+    <div class="phase-tab ${state.phase===p.id?'active':''}" onclick="setPhaseTab(${p.id})">
+      <div class="pt-num">Phase ${p.id}${p.id===curPhaseId?' ★':''}</div>
+      <div class="pt-weeks">${p.weeks}</div>
+    </div>`).join('')}
+  </div>
+  <div class="card" style="border-color:${phase.color}44;background:${phase.color}0f">
+    <div style="font-size:14px;font-weight:800;color:${phase.color};margin-bottom:6px">Phase ${phase.id} — ${esc(phase.label)}</div>
+    <div style="font-size:12px;color:var(--inkMid);line-height:1.6">${esc(phase.goal)}</div>
+  </div>
+
+  <div class="section-title">Semaine type — Phase ${phase.id}</div>
+  ${dayCards}`;
+}
+
+function renderExerciseRx(ex, phase) {
+  const rx = phase[ex.cat];
+  if (ex.cat==='core') {
+    return `<div class="exercise-prescription">
+      <span class="rx-pill">${rx.sets} séries</span><span class="rx-pill">${rx.time}</span><span class="rx-pill">repos ${rx.rest}s</span>
+    </div>`;
+  }
+  return `<div class="exercise-prescription">
+    <span class="rx-pill">${esc(rx.band)}</span><span class="rx-pill">${rx.sets} x ${rx.reps}</span>
+    <span class="rx-pill">tempo ${rx.tempo}</span><span class="rx-pill">repos ${rx.rest}s</span>
+  </div>`;
+}
+
+function renderSession() {
+  const d = DAYS.find(x=>x.id===state.selectedDay);
+  if (!d) return renderWeek();
+  const phase = PHASES.find(p=>p.id===state.phase);
+  const checkedCount = d.exercises.filter((_,i)=>state.checked[i]).length;
+  const pct = Math.round(checkedCount/d.exercises.length*100);
+  const allDone = checkedCount === d.exercises.length;
+  const history = state.workoutLog.filter(l=>l.dayId===d.id).sort((a,b)=>b.date.localeCompare(a.date)).slice(0,3);
+  const catColors = { compound:'var(--blue)', isolation:'var(--gold)', core:'var(--green)' };
+  const catLabels = { compound:'Composé', isolation:'Isolation', core:'Gainage' };
+  const catBg = { compound:'var(--blueDim)', isolation:'var(--goldDim)', core:'rgba(74,200,122,.15)' };
+
+  return `
+  <div style="display:flex;align-items:center;gap:12px;margin-bottom:18px">
+    <button class="back-btn" onclick="backToWeek()">←</button>
+    <div>
+      <div style="font-size:17px;font-weight:800">${d.label} — ${esc(d.name)}</div>
+      <div style="font-size:11px;color:var(--inkMid)">${esc(d.sub)} · Phase ${phase.id} — ${esc(phase.label)}</div>
+    </div>
+  </div>
+
+  <div class="card" style="background:${d.color}12;border-color:${d.color}33">
+    <div style="font-size:11px;color:var(--inkMid);text-transform:uppercase;letter-spacing:.1em;font-weight:600;margin-bottom:4px">Échauffement</div>
+    <div style="font-size:13px">${esc(d.warmup)}</div>
+  </div>
+
+  <div class="progress-bar-wrap"><div class="progress-bar" style="width:${pct}%;background:${d.color}"></div></div>
+  <div style="font-size:11px;color:var(--inkMid);margin-bottom:18px">${checkedCount} / ${d.exercises.length} exercices faits</div>
+
+  <div class="card" style="padding:6px 14px">
+    ${d.exercises.map((ex,i)=>{
+      const on = !!state.checked[i];
+      return `
+      <div class="exercise-row">
+        <div class="exercise-row-top" onclick="toggleExercise(${i})">
+          <div class="exercise-check" style="${on?`background:${d.color};border-color:${d.color}`:''}">${on?'✓':''}</div>
+          <div class="exercise-name" style="${on?'text-decoration:line-through;color:var(--inkDim)':''}">${esc(ex.name)}</div>
+        </div>
+        <span class="cat-badge" style="color:${catColors[ex.cat]};background:${catBg[ex.cat]}">${catLabels[ex.cat]}</span>
+        ${renderExerciseRx(ex, phase)}
+      </div>`;
+    }).join('')}
+  </div>
+
+  ${d.cardio ? `
+  <div class="card">
+    <div style="font-size:11px;color:var(--inkMid);text-transform:uppercase;letter-spacing:.1em;font-weight:600;margin-bottom:8px">
+      ${d.cardio==='piscine'?'🏊 Natation':d.cardio==='velo'?'🚴 Vélo gravel':'🏃 Course à pied'}
+    </div>
+    <div style="font-size:14px;font-weight:700">${CARDIO[d.cardio][phase.id-1].duration}</div>
+    <div style="font-size:12px;color:var(--inkMid);margin-top:4px">${esc(CARDIO[d.cardio][phase.id-1].detail)}</div>
+  </div>` : ''}
+
+  ${renderTimer()}
+
+  <button class="btn-primary" style="background:${allDone?'var(--green)':d.color};margin-bottom:16px" onclick="finishSession()">
+    ${allDone?'✓ Séance terminée — Valider':'Terminer la séance'}
+  </button>
+
+  ${history.length>0?`
+  <div class="card">
+    <div class="section-title">Historique — ${esc(d.name)}</div>
+    ${history.map(l=>`<div class="weight-row"><span style="color:var(--inkMid)">${fmtDate(l.date)}</span><span style="color:var(--green);font-weight:600">✓ Complétée (Phase ${l.phase||1})</span></div>`).join('')}
+  </div>`:''}`;
+}
+
+// ── INIT ──────────────────────────────────────────────────
+loadStorage();
+state.phase = getCurrentPhaseId();
+render();
+</script>
+</body></html>
